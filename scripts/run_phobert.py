@@ -1,4 +1,7 @@
 import os
+import certifi
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 import torch
 import numpy as np
 import pandas as pd
@@ -87,6 +90,8 @@ def compute_metrics(eval_pred):
 
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=3)
 
+num_epochs = 1 if args.smoke else 4
+total_steps = max(1, (len(train_encoded) // 32) * num_epochs)
 training_args_kwargs = dict(
     output_dir=model_dir,
     save_strategy="epoch",
@@ -94,15 +99,16 @@ training_args_kwargs = dict(
     per_device_train_batch_size=16,
     gradient_accumulation_steps=2,
     per_device_eval_batch_size=32,
-    num_train_epochs=1 if args.smoke else 4,
-    warmup_ratio=0.1,
+    num_train_epochs=num_epochs,
+    warmup_steps=max(1, int(0.1 * total_steps)),
     weight_decay=0.01,
     fp16=torch.cuda.is_available(),
     load_best_model_at_end=True,
     metric_for_best_model="f1_macro",
     seed=SEED,
     logging_steps=100,
-    save_total_limit=1
+    save_total_limit=1,
+    report_to="none"
 )
 
 try:

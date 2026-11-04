@@ -7,3 +7,6 @@ torch
 transformers
 datasets
 accelerate
+streamlit
+plotly
+requests
