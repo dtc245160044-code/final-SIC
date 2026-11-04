@@ -87,6 +87,8 @@ def compute_metrics(eval_pred):
 
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=3)
 
+import inspect
+
 training_args_kwargs = dict(
     output_dir=model_dir,
     save_strategy="epoch",
@@ -95,7 +97,6 @@ training_args_kwargs = dict(
     gradient_accumulation_steps=2,
     per_device_eval_batch_size=32,
     num_train_epochs=1 if args.smoke else 4,
-    warmup_ratio=0.1,
     weight_decay=0.01,
     fp16=torch.cuda.is_available(),
     load_best_model_at_end=True,
@@ -105,10 +106,17 @@ training_args_kwargs = dict(
     save_total_limit=1
 )
 
-try:
-    training_args = TrainingArguments(eval_strategy="epoch", **training_args_kwargs)
-except TypeError:
-    training_args = TrainingArguments(evaluation_strategy="epoch", **training_args_kwargs)
+valid_params = set(inspect.signature(TrainingArguments.__init__).parameters)
+if "warmup_ratio" in valid_params:
+    training_args_kwargs["warmup_ratio"] = 0.1
+elif "warmup_steps" in valid_params:
+    training_args_kwargs["warmup_steps"] = 100
+if "eval_strategy" in valid_params:
+    training_args_kwargs["eval_strategy"] = "epoch"
+elif "evaluation_strategy" in valid_params:
+    training_args_kwargs["evaluation_strategy"] = "epoch"
+
+training_args = TrainingArguments(**training_args_kwargs)
 
 trainer = WeightedTrainer(
     model=model,
