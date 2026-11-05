@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import inspect
 import argparse
 import certifi
 
@@ -142,10 +143,6 @@ training_args_kwargs = dict(
 )
 
 valid_params = set(inspect.signature(TrainingArguments.__init__).parameters)
-if "warmup_ratio" in valid_params:
-    training_args_kwargs["warmup_ratio"] = 0.1
-elif "warmup_steps" in valid_params:
-    training_args_kwargs["warmup_steps"] = 100
 if "eval_strategy" in valid_params:
     training_args_kwargs["eval_strategy"] = "epoch"
 elif "evaluation_strategy" in valid_params:
