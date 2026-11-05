@@ -141,10 +141,17 @@ training_args_kwargs = dict(
     report_to="none",
 )
 
-try:
-    training_args = TrainingArguments(eval_strategy="epoch", **training_args_kwargs)
-except TypeError:
-    training_args = TrainingArguments(evaluation_strategy="epoch", **training_args_kwargs)
+valid_params = set(inspect.signature(TrainingArguments.__init__).parameters)
+if "warmup_ratio" in valid_params:
+    training_args_kwargs["warmup_ratio"] = 0.1
+elif "warmup_steps" in valid_params:
+    training_args_kwargs["warmup_steps"] = 100
+if "eval_strategy" in valid_params:
+    training_args_kwargs["eval_strategy"] = "epoch"
+elif "evaluation_strategy" in valid_params:
+    training_args_kwargs["evaluation_strategy"] = "epoch"
+
+training_args = TrainingArguments(**training_args_kwargs)
 
 trainer = WeightedTrainer(
     model=model,
