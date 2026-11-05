@@ -119,3 +119,4 @@ def lay_binh_luan_youtube(
     df = pd.DataFrame(dong[:gioi_han], columns=["text", "like", "thoi_gian"])
     df = df[df["text"].str.len() > 0].reset_index(drop=True)
     return df
+

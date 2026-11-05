@@ -71,3 +71,4 @@ def build_config() -> dict:
 
 if __name__ == "__main__":
     build_config()
+

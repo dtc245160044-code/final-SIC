@@ -3,7 +3,7 @@
 **Đề tài:** Phát hiện Bình luận Độc hại Tiếng Việt trên Mạng Xã hội (Bộ dữ liệu ViHSD)  
 **Kho mã nguồn:** `https://github.com/dtc245160044-code/final-SIC.git`  
 
-> **Ghi chú:** Mọi con số thống kê, bảng biểu và ví dụ lỗi trong báo cáo này đều được trích xuất trực tiếp từ kết quả chạy code thật trong `data/processed/` và `outputs/` (tuyệt đối không điền số giả). Các mục đánh dấu **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`** là vị trí dành cho nhóm rà soát nhận xét cá nhân hoặc điền thêm dòng PhoBERT sau khi chạy xong notebook Colab `notebooks/03_phobert_colab.ipynb`.
+> **Ghi chú:** Mọi con số thống kê, bảng biểu và ví dụ lỗi trong báo cáo này đều được trích xuất trực tiếp từ kết quả chạy code thật trong `data/processed/` và `outputs/` (tuyệt đối không điền số giả). Kết quả chính thức của dự án được lấy từ lần chấm duy nhất trên tập **Test (`2.986` mẫu)**. Các mục đánh dấu **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`** là vị trí dành cho nhóm rà soát nhận xét cá nhân hoặc điền thêm dòng PhoBERT sau khi chạy xong notebook Colab `notebooks/03_phobert_colab.ipynb`.
 
 ---
 
@@ -15,13 +15,13 @@ Sự bùng nổ của các nền tảng mạng xã hội và video trực tuyế
 Tuy nhiên, bài toán tự động phát hiện bình luận độc hại tiếng Việt gặp nhiều thách thức đặc thù:
 1. **Hiện tượng biến âm, teencode và né bộ lọc:** Người dùng mạng thường xuyên viết tắt (`ko`, `dc`, `bt`, `dm`), kéo dài chữ cái (`nguuuuu`), hoặc chèn dấu chấm/gạch ngang/dấu sao giữa các chữ cái (`m.à.y`, `n-g-u`, `đ*o`) để qua mặt các bộ lọc từ khóa tĩnh.
 2. **Đặc trưng từ ghép tiếng Việt:** Khoảng trắng trong tiếng Việt dùng để tách âm tiết chứ không tách từ (ví dụ: `"bất_hạnh"`, `"thất_học"`), đòi hỏi bước tách từ (`word segmentation`) chính xác trước khi đưa vào mô hình học máy.
-3. **Độ lệch nhãn nghiêm trọng và ranh giới ngữ nghĩa mờ:** Bình luận thông thường chiếm đa số tuyệt đối (>80%), trong khi ranh giới giữa câu nói đùa suồng sã, câu xúc phạm nhẹ (`OFFENSIVE`) và câu thù ghét (`HATE`) rất mỏng manh.
+3. **Độ lệch nhãn nghiêm trọng và ranh giới ngữ nghĩa mờ:** Bình luận thông thường chiếm đa số tuyệt đối (`82,60%`), trong khi lớp `OFFENSIVE` chỉ chiếm `6,73%` và có ranh giới rất mờ giữa câu nói đùa suồng sã, câu xúc phạm nhẹ và câu thù ghét.
 
-### 1.2. Mục tiêu của dự án
+### 1.2. Mục tiêu của dự án & Tóm tắt Kết quả Chính thức (trên tập Test)
 - Xây dựng quy trình tiền xử lý văn bản tiếng Việt chuẩn hóa (`src/preprocess.py`), giải quyết trực tiếp teencode, chữ kéo dài, ký tự chèn và tách từ bằng `pyvi`.
-- Huấn luyện, tinh chỉnh có hệ thống (76 thử nghiệm trên tập Validation) và hiệu chuẩn xác suất mô hình học máy **TF-IDF + LinearSVC (Calibrated)**, đồng thời xây dựng pipeline huấn luyện mô hình ngôn ngữ tiền huấn luyện **PhoBERT (`vinai/phobert-base-v2`)**.
-- Đánh giá khách quan một lần duy nhất trên tập **Test (2.986 mẫu)** và thực hiện phân tích lỗi chuyên sâu (theo loại lỗi FP/FN, theo độ dài câu, theo đặc tính nhiễu và phân tích riêng lớp `OFFENSIVE`).
-- Xây dựng ứng dụng Web **Streamlit 6 trang** phục vụ thử nghiệm trực tiếp (kèm giải thích từ gây độc bằng kỹ thuật *Leave-One-Token-Out*), minh họa tiền xử lý, hiển thị bảng đánh giá và quét bình luận thực tế qua **YouTube Data API v3**.
+- Huấn luyện, tinh chỉnh có hệ thống (76 thử nghiệm trên tập Validation) và hiệu chuẩn xác suất mô hình **TF-IDF + LinearSVC (Calibrated)**, đồng thời xây dựng pipeline huấn luyện mô hình ngôn ngữ tiền huấn luyện **PhoBERT (`vinai/phobert-base`)**.
+- **Kết quả chính thức trên tập Test độc lập (`2.986` mẫu — chấm đúng 1 lần duy nhất):** Mô hình **TF-IDF + LinearSVC (Calibrated)** đạt **Accuracy = `87,74%`**, **F1-macro = `67,03%`**, **Toxic Precision = `74,59%`**, **Toxic Recall = `68,24%`** (trong đó **F1 `CLEAN` = `94,13%`**, **F1 `OFFENSIVE` = `41,36%`**, **F1 `HATE` = `65,61%`**), tốc độ suy luận **`5,89 ms/bình luận`**.
+- Xây dựng ứng dụng Web **Streamlit 6 trang** phục vụ thử nghiệm trực tiếp (kèm giải thích từ gây độc bằng kỹ thuật *Leave-One-Token-Out*), minh họa tiền xử lý, hiển thị bảng đánh giá và quét bình luận thực tế qua **YouTube Data API v3** (`src/youtube.py` & `scripts/lay_youtube_demo.py`).
 
 ---
 
@@ -69,26 +69,26 @@ Mọi bình luận (cả khi huấn luyện lẫn khi dự đoán trực tiếp 
 
 ---
 
-## 3. Phương pháp Mô hình hóa & Tinh chỉnh Siêu tham số
+## 3. Phương pháp Mô hình hóa & Tinh chỉnh Siêu tham số trên Tập Validation
 
 ### 3.1. Mô hình Baseline: TF-IDF kết hợp LinearSVC có Hiệu chuẩn Xác suất
 - **Trích xuất đặc trưng (`FeatureUnion`):** Kết hợp đồng thời hai nhánh TF-IDF:
   - **Word n-gram:** Bắt từ đơn, cụm 2 từ và cụm 3 từ đã tách (`ngram_range=(1, 3)`, `min_df=2`, `max_features=45.000`, `sublinear_tf=True`).
   - **Character n-gram (`char_wb`):** Bắt chuỗi ký tự con từ 2 đến 5 ký tự trong phạm vi từ (`ngram_range=(2, 5)`, `min_df=3`, `max_features=45.000`, `sublinear_tf=True`), giúp mô hình nhận diện tốt các từ viết sai chính tả nhẹ hoặc biến thể từ tục chưa có trong từ điển.
-- **Lý do dùng `CalibratedClassifierCV(cv=5)`:** Mô hình `LinearSVC` phân lớp rất mạnh trên không gian TF-IDF chiều cao nhưng bản chất chỉ xuất ra khoảng cách tới siêu phẳng (`decision_function`), không có hàm `predict_proba()`. Việc bọc `CalibratedClassifierCV(LinearSVC, cv=5, method="sigmoid")` (Platt scaling 5-fold ngay trên tập Train) giúp mô hình xuất ra xác suất thực sự cho từng nhãn `P(CLEAN)`, `P(OFFENSIVE)`, `P(HATE)` và tính được `diem_toxic = P(OFFENSIVE) + P(HATE)`.
+- **Lý do dùng `CalibratedClassifierCV(cv=5)`:** Mô hình `LinearSVC` phân lớp rất mạnh trên không gian TF-IDF chiều cao nhưng bản chất chỉ xuất ra khoảng cách tới siêu phẳng (`decision_function`), không có hàm `predict_proba()`. Việc bọc `CalibratedClassifierCV(LinearSVC, cv=5, method="sigmoid")` (Platt scaling 5-fold chỉ fit trên tập Train) giúp mô hình xuất ra xác suất thực sự cho từng nhãn `P(CLEAN)`, `P(OFFENSIVE)`, `P(HATE)` và tính được `diem_toxic = P(OFFENSIVE) + P(HATE)`.
 
-### 3.2. Kết quả 76 thử nghiệm tinh chỉnh trên tập Validation (`outputs/thu_nghiem_baseline.csv`)
+### 3.2. Quá trình 76 thử nghiệm trên tập Validation (`outputs/thu_nghiem_baseline.csv`)
 Để tìm cấu hình tốt nhất mà **tuyệt đối không chạm vào tập Test**, kịch bản `scripts/tune_baseline.py` đã thực hiện **76 lần thử nghiệm** trên tập Validation (`2.985` mẫu) theo 4 nhóm:
 1. **Nhóm 1 — Mốc chuẩn `CalibratedClassifierCV(LinearSVC, cv=5)`** với các hệ số phạt `C` từ `0.05` đến `1.0` và `class_weight` (`None`, `balanced`).
 2. **Nhóm 2 — Đối chiếu với `LogisticRegression`** (`C` từ `0.5` đến `5.0`, `class_weight="balanced"` và không trọng số).
 3. **Nhóm 3 — Tinh chỉnh trọng số lớp (`class_weight = {0: 1.0, 1: w1, 2: w2}`)** và **ngưỡng quyết định riêng cho lớp `OFFENSIVE`** (`thr_off` từ `0.20` đến `0.45`).
 4. **Nhóm 4 — Mở rộng đặc trưng n-gram (`word (1,3) + char_wb (2,5)`) kết hợp trọng số lớp và ngưỡng.**
 
-**Bảng trích xuất các thử nghiệm tiêu biểu trên tập Validation (`2.985` mẫu):**
+**Bảng trích xuất các thử nghiệm trên tập Validation (`2.985` mẫu — chỉ dùng để chọn mô hình, không phải kết quả cuối):**
 
-| Thứ hạng | Tên thử nghiệm (`experiment_name`) | Nhóm mô hình | Accuracy Val | F1-macro Val | F1 `CLEAN` | F1 `OFFENSIVE` | F1 `HATE` |
+| Thứ hạng (Val) | Tên thử nghiệm (`experiment_name`) | Nhóm mô hình | Accuracy Val | F1-macro Val | F1 `CLEAN` (Val) | F1 `OFFENSIVE` (Val) | F1 `HATE` (Val) |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **1 (Tốt nhất)** | `CalibratedSVC_C0.1_sublinear_w13_c25_w_1_3.0_2.0` | SVC Calibrated + N-gram (1,3)+(2,5) + Trọng số `{0:1, 1:3, 2:2}` | **87,64%** | **68,19%** | **93,97%** | **47,03%** | **63,56%** |
+| **1 (Được chọn)** | `CalibratedSVC_C0.1_sublinear_w13_c25_w_1_3.0_2.0` | SVC Calibrated + N-gram (1,3)+(2,5) + Trọng số `{0:1, 1:3, 2:2}` | **87,64%** | **68,19%** | **93,97%** | **47,03%** | **63,56%** |
 | **2** | `CalibratedSVC_C0.1_sublinear_w13_c25_w_1_3.0_2.0_thrOff_0.4` | SVC Calibrated + Ngưỡng `thr_off=0.40` | 87,27% | 68,10% | 93,86% | 46,61% | 63,84% |
 | **3** | `CalibratedSVC_C0.15_sublinear_w13_c25_w_1_3.5_2.0_thrOff_0.45` | SVC Calibrated (`C=0.15`, `w={0:1, 1:3.5, 2:2}`) | 87,40% | 67,84% | 93,86% | 46,65% | 63,02% |
 | **17** | `CalibratedSVC_C0.2_bal` | SVC Calibrated chuẩn (`C=0.2, balanced, w12+c25`) | 88,07% | 67,05% | 94,14% | 41,72% | 65,30% |
@@ -96,36 +96,34 @@ Mọi bình luận (cả khi huấn luyện lẫn khi dự đoán trực tiếp 
 | **Mốc cũ** | `UnCalibrated_LinearSVC_C0.1_bal` (`run_baseline.py`) | LinearSVC chưa hiệu chuẩn (`C=0.1, balanced`) | 87,20% | 66,05% | 93,96% | 41,51% | 62,67% |
 | **65** | `LogReg_C1.0_bal` | Logistic Regression (`C=1.0, balanced`) | 83,35% | 63,34% | 91,63% | 37,52% | 60,87% |
 
-**Nhận xét lựa chọn mô hình:**
-- Cấu hình **`CalibratedSVC_C0.1_sublinear_w13_c25_w_1_3.0_2.0`** đạt **F1-macro cao nhất trên Validation (`68,19%`)**, cải thiện **`+2,14` điểm % F1-macro** và **`+5,52` điểm % F1 trên nhãn `OFFENSIVE`** (từ `41,51%` lên `47,03%`) so với baseline gốc nhờ gán trọng số mẫu `{0: 1.0, 1: 3.0, 2: 2.0}` vừa đủ trước khi đưa vào `CalibratedClassifierCV`.
-- Mô hình này được lưu chính thức tại `models/baseline_calibrated.pkl` (giữ nguyên `models/baseline_LinearSVC_C0.1.pkl` để đối chiếu).
-- **Lưu ý phương pháp luận:** Vì 76 lần thử nghiệm đều được so sánh trên tập Validation nên con số `68,19%` có thể hơi lạc quan nhẹ trên Val; do đó năng lực thực tế của mô hình được chốt bằng lần chấm duy nhất trên tập **Test** ở Mục 4.
+> **Giải thích vì sao điểm trên Validation cao hơn điểm trên Test:**  
+> Cấu hình `CalibratedSVC_C0.1_sublinear_w13_c25_w_1_3.0_2.0` được chọn vì đạt đỉnh trong số **76 lần thử nghiệm liên tiếp trên cùng tập Validation (`03_val.csv`)**. Việc chọn cực đại qua 76 lần thử trên Val tất yếu tạo ra độ lệch lạc quan nhẹ (*selection bias / multiple-comparisons optimism*) trên tập Val (`F1-macro Val = 68,19%`, `F1 OFFENSIVE Val = 47,03%`). Khi đem mô hình này chấm đúng 1 lần duy nhất trên tập **Test độc lập (`03_test.csv`)**, kết quả thực tế đạt **`F1-macro Test = 67,03%`** và **`F1 OFFENSIVE Test = 41,36%`** (chênh lệch `-1,16%` ở F1-macro). Do đó, **số liệu trên tập Test ở Mục 4 là kết quả chính thức duy nhất của báo cáo**.
 
 ### 3.3. Mô hình PhoBERT Fine-tune (`scripts/run_phobert.py` & `notebooks/03_phobert_colab.ipynb`)
-- **Kiến trúc:** Fine-tune mô hình `vinai/phobert-base-v2` với tầng phân loại 3 lớp (`AutoModelForSequenceClassification`), độ dài tối đa `max_length = 128` token sau tách từ `pyvi`.
-- **Hàm mất mát có trọng số (`WeightedCrossEntropyTrainer`):** Để chống lệch nhãn, hàm `CrossEntropyLoss` được truyền vector trọng số lớp nghịch đảo tần suất xuất hiện trên tập Train (`w_c = N / (3 * N_c)`), kết hợp `fp16=True`, `learning_rate=2e-5`, `weight_decay=0.01`, `4 epochs` và chọn checkpoint tốt nhất theo `eval_f1_macro`.
-- 📝 **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`:** Sau khi chạy xong `notebooks/03_phobert_colab.ipynb` trên Google Colab GPU và giải nén về `models/phobert/best/`, nhóm chạy `python scripts/evaluate_final.py` và điền bổ sung chỉ số F1-macro Val / Test của PhoBERT vào đây.
+- **Kiến trúc thực tế trong code:** Fine-tune mô hình **`vinai/phobert-base`** với tầng phân loại 3 lớp (`AutoModelForSequenceClassification`), độ dài tối đa `max_length = 128` token sau tách từ `pyvi`.
+- **Hàm mất mát có trọng số (`WeightedTrainer`):** Để chống lệch nhãn, hàm `CrossEntropyLoss` được truyền vector trọng số lớp cân bằng (`compute_class_weight('balanced')`) tính trên tập Train, kết hợp `fp16=True`, `learning_rate=2e-5`, `weight_decay=0.01`, `4 epochs` và chọn checkpoint tốt nhất theo `eval_f1_macro`.
+- 📝 **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`:** Sau khi chạy xong `notebooks/03_phobert_colab.ipynb` trên Google Colab GPU và giải nén về `models/phobert/best/`, nhóm chạy `python scripts/evaluate_final.py` và điền bổ sung chỉ số F1-macro Test của `vinai/phobert-base` vào Mục 4.
 
 ---
 
-## 4. Kết quả Đánh giá Chính thức trên Tập Test (`2.986` mẫu)
+## 4. Kết quả Chính thức trên Tập Test (`2.986` mẫu — Chấm đúng 1 lần)
 
 Kịch bản `scripts/evaluate_final.py` chấm điểm tập `data/processed/03_test.csv` (`2.986` mẫu độc lập hoàn toàn) đúng 1 lần duy nhất và xuất ra `outputs/bang_so_sanh_mo_hinh.csv`:
 
-### 4.1. Bảng tổng hợp các chỉ số trên tập Test
+### 4.1. Bảng kết quả chính thức trên tập Test (`outputs/bang_so_sanh_mo_hinh.csv`)
 | Mô hình | Accuracy (%) | F1-macro (%) | Toxic Precision (%) | Toxic Recall (%) | F1 `CLEAN` (%) | F1 `OFFENSIVE` (%) | F1 `HATE` (%) | Độ trễ (ms/câu) | Kích thước (MB) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **TF-IDF + LinearSVC (Calibrated)** | **87,74%** | **67,03%** | **74,59%** | **68,24%** | **94,13%** | **41,36%** | **65,61%** | **5,89 ms** | **9,42 MB** |
-| *PhoBERT (fine-tune)* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* |
+| *PhoBERT (`vinai/phobert-base`)* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* |
 
-*(Trong đó **Toxic Precision** và **Toxic Recall** đo hiệu năng phát hiện bình luận độc hại gộp chung hai lớp `{1: OFFENSIVE, 2: HATE}` so với lớp `{0: CLEAN}`).*
+*(Trong đó **Toxic Precision = `74,59%`** và **Toxic Recall = `68,24%`** đo hiệu năng phát hiện bình luận độc hại trên 2 lớp `{1: OFFENSIVE, 2: HATE}`).*
 
-### 4.2. Phân tích Ma trận nhầm lẫn trên tập Test (`outputs/ma_tran_nham_lan_TF_IDF_LinearSVC_Calibrated.png`)
+### 4.2. Phân tích Ma trận nhầm lẫn chính thức trên tập Test (`outputs/ma_tran_nham_lan_TF_IDF_LinearSVC_Calibrated.png`)
 Trên tổng số **2.986** mẫu của tập Test:
 - **Lớp `0 — Bình thường` (2.466 mẫu thật):** Mô hình đoán đúng **2.343 mẫu (`95,01%`)**, báo nhầm sang `Xúc phạm` 57 mẫu và sang `Thù ghét` 66 mẫu (tổng cộng **123 ca Báo nhầm — False Positive**, chiếm `4,99%` số câu bình thường).
-- **Lớp `1 — Xúc phạm` (201 mẫu thật):** Mô hình đoán đúng **73 mẫu (`36,32%`)**, bỏ sót sang `Bình thường` 91 mẫu (`45,27%`) và nhầm mức độ sang `Thù ghét` 37 mẫu (`18,41%`).
-- **Lớp `2 — Thù ghét` (319 mẫu thật):** Mô hình đoán đúng **204 mẫu (`63,95%`)**, nhầm mức độ sang `Xúc phạm` 38 mẫu (`11,91%`) và bỏ sót sang `Bình thường` 77 mẫu (`24,14%`).
-- **Tổng số ca Bỏ sót độc hại (False Negative — thật là 1 hoặc 2 nhưng đoán là 0):** **168 mẫu** trên tổng số 520 mẫu độc hại (tức bắt trúng **352/520 = `67,69%`** bình luận độc hại; nếu tính macro recall trên 2 lớp độc hại đạt **`68,24%`**).
+- **Lớp `1 — Xúc phạm` (201 mẫu thật):** Mô hình đoán đúng **73 mẫu (`36,32%`)**, bỏ sót sang `Bình thường` 91 mẫu (`45,27%`) và nhầm mức độ sang `Thù ghét` 37 mẫu (`18,41%`). Kết hợp với Precision `48,03%`, **F1 chính thức của lớp `OFFENSIVE` trên tập Test là `41,36%`**.
+- **Lớp `2 — Thù ghét` (319 mẫu thật):** Mô hình đoán đúng **204 mẫu (`63,95%`)**, nhầm mức độ sang `Xúc phạm` 38 mẫu (`11,91%`) và bỏ sót sang `Bình thường` 77 mẫu (`24,14%`). **F1 chính thức của lớp `HATE` trên tập Test đạt `65,61%`** (cao hơn trên Val là `63,56%`).
+- **Tổng số ca Bỏ sót độc hại (False Negative — thật là 1 hoặc 2 nhưng đoán là 0):** **168 mẫu** trên tổng số 520 mẫu độc hại.
 
 ---
 
@@ -159,8 +157,8 @@ Chia 2.986 mẫu tập Test thành 3 nhóm theo số lượng từ sau tách t�
 - Nhờ hàm `fix_keo_dai` trong `src/preprocess.py`, các câu có chữ kéo dài được chuẩn hóa rất tốt và đạt tỷ lệ lỗi thấp nhất (`7,84%`).
 - Các câu chứa **teencode (`15,60%` lỗi)** và đặc biệt là **câu chèn ký tự / dấu `*` né bộ lọc (`36,84%` lỗi)** vẫn là nhóm khó nhất vì người dùng tạo ra các biến thể viết tắt ngoài danh sách 42 từ hoặc dùng dấu `*` che mất nguyên âm (`đ*o`, `đ*t`) khiến từ vựng lệch khỏi từ điển chuẩn.
 
-### 5.3. Phân tích nguyên nhân lớp `OFFENSIVE` đạt F1 thấp (`41,36%`) & Top 15 ca đoán sai (`outputs/top15_offensive_doan_sai.csv`)
-Việc lớp `OFFENSIVE` có F1 dưới `0,50` (trên Val đạt `47,03%`, trên Test đạt `41,36%`) xuất phát từ **3 hạn chế bản chất của dữ liệu**:
+### 5.3. Phân tích nguyên nhân lớp `OFFENSIVE` đạt F1 = `41,36%` trên Test & Top 15 ca đoán sai (`outputs/top15_offensive_doan_sai.csv`)
+Việc lớp `OFFENSIVE` có F1 chính thức trên tập Test là **`41,36%`** (dưới mức `0,50`) xuất phát từ **3 hạn chế bản chất của dữ liệu**:
 1. **Thiếu mẫu huấn luyện nghiêm trọng:** Lớp `OFFENSIVE` chỉ chiếm **`6,73%`** bộ dữ liệu (`1.606` mẫu Train, `201` mẫu Test).
 2. **Định nghĩa nhãn nằm ở vùng xám:** Nhiều câu trong `outputs/top15_offensive_doan_sai.csv` dùng từ ngữ hoàn toàn thông thường để mỉa mai hoặc nói trại âm:
    - Ví dụ 1: *"Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á"* -> Nhãn thật: `OFFENSIVE`, mô hình đoán: `Bình thường` (`P = 0,8769`) vì cả câu chỉ có từ *"khùng"* nằm cuối câu điều kiện dài.
@@ -176,7 +174,7 @@ Việc lớp `OFFENSIVE` có F1 dưới `0,50` (trên Val đạt `47,03%`, trên
 
 Ứng dụng Web được thiết kế theo kiến trúc tách biệt hoàn toàn giữa **Tầng giao diện (`app/`)** và **Tầng suy luận lõi (`src/`)**:
 - **`src/inference.py`:** Cung cấp hợp đồng hàm chuẩn (`doc_cau_hinh`, `tai_mo_hinh`, `phan_loai`, `phan_loai_hang_loat`, `tim_tu_gay_doc`). Hàm `tim_tu_gay_doc` sử dụng kỹ thuật **Leave-One-Token-Out (LOTO)** kết hợp độ giảm xác suất và độ giảm logit để tô đỏ chính xác những từ làm tăng điểm độc hại trong câu.
-- **`src/youtube.py`:** Kết nối trực tiếp `commentThreads.list` của YouTube Data API v3, giới hạn an toàn tối đa 500 bình luận, xử lý đầy đủ các mã lỗi tiếng Việt (`commentsDisabled`, `quotaExceeded`, `keyInvalid`, `videoNotFound`) và tuyệt đối không lưu tên người bình luận hay API key.
+- **`src/youtube.py` & `scripts/lay_youtube_demo.py`:** Kết nối trực tiếp `commentThreads.list` của YouTube Data API v3, giới hạn an toàn tối đa 500 bình luận (hoặc 100–200 bình luận qua `scripts/lay_youtube_demo.py`), xử lý đầy đủ các mã lỗi tiếng Việt (`commentsDisabled`, `quotaExceeded`, `keyInvalid`, `videoNotFound`) và tuyệt đối không lưu tên người bình luận hay API key. Chế độ dự phòng trên Trang 4 chỉ hiển thị khi người dùng đã tự chạy API thật để lưu `outputs/ket_qua_youtube.csv` (kèm cột `video_id` và `ngay_lay`); nếu chưa chạy thì hiển thị rõ *"Chưa có kết quả"*.
 - **6 trang giao diện (`app/Home.py` & `app/pages/1..5`):** Đã vượt qua toàn bộ bộ kiểm thử tự động `pytest` (`tests/test_inference.py`) ở cả 3 trạng thái: đủ dữ liệu, thiếu thư mục `outputs/`, và thiếu thư mục `models/` mà không phát sinh bất kỳ lỗi dừng chương trình nào.
 
 ---
@@ -186,6 +184,6 @@ Việc lớp `OFFENSIVE` có F1 dưới `0,50` (trên Val đạt `47,03%`, trên
 1. **Nguyên tắc Con người làm trung tâm (*Human-in-the-loop*):** Với tỷ lệ Báo nhầm (FP) khoảng `4,99%` trên các câu bình thường (nhất là các câu dùng từ lóng/tục để đùa vui, khen ngợi bạn bè như *"cá kho... ngon vailone :)"*), hệ thống **chỉ được sử dụng làm công cụ sàng lọc và xếp hạng ưu tiên** cho kiểm duyệt viên, tuyệt đối không tự động xóa bình luận hay khóa tài khoản người dùng.
 2. **Bảo vệ quyền riêng tư:** Không thu thập, lưu trữ hay hiển thị định danh cá nhân của người bình luận.
 3. **Hướng phát triển tiếp theo:**
-   - Hoàn tất huấn luyện và tích hợp mô hình **PhoBERT (`vinai/phobert-base-v2`)** để nắm bắt ngữ cảnh hai chiều và cải thiện khả năng nhận diện các câu mỉa mai, nói giảm nói tránh ở lớp `OFFENSIVE`.
+   - Hoàn tất huấn luyện và tích hợp mô hình **PhoBERT (`vinai/phobert-base`)** để nắm bắt ngữ cảnh hai chiều và cải thiện khả năng nhận diện các câu mỉa mai, nói giảm nói tránh ở lớp `OFFENSIVE`.
    - Bổ sung ngữ cảnh tiêu đề bài viết / video và bình luận gốc (parent comment) vào đầu vào của mô hình.
    - Mở rộng bộ chuẩn hóa từ lóng, từ viết trại âm và ký tự che chữ (`*`) bằng mô hình ngôn ngữ mức ký tự.

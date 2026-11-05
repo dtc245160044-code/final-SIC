@@ -16,15 +16,15 @@ cai_dat_trang(tieu_de="Tiền xử lý", icon="🧹")
 st.title("🧹 Tiền xử lý văn bản tiếng Việt: Trước và Sau")
 st.markdown(
     "Bình luận mạng xã hội thường chứa đường dẫn, emoji, chữ kéo dài (`quááááá`), teencode (`ko`, `dc`, `mn`) "
-    "và ký tự chèn giữa chữ để né bộ lọc (`b.ắ.c k.ỳ`, `l**`). Trang này minh họa trực tiếp quy trình chuẩn hóa "
-    "từ `src/preprocess.py`."
+    "và ký tự chèn giữa chữ để né bộ lọc. Trang này minh họa trực tiếp quy trình chuẩn hóa "
+    "từ `src/preprocess.py` trên dữ liệu thật của bộ ViHSD."
 )
 
 c_in, c_btn = st.columns([4, 1])
 with c_in:
     cau_tho = st.text_input(
-        "Nhập câu thô cần kiểm tra tiền xử lý:",
-        value="hàng như l** ý mn đừng mua lừa đảo đấy k dùng dc đâu https://shopee.vn/fake-shop 😍",
+        "Nhập câu thô cần kiểm tra tiền xử lý (mặc định là câu thật từ bộ dữ liệu ViHSD):",
+        value="Đúng là bọn mắt híp lò xo thụt :))) bên việt nam t cái này ra cách đây 10 năm r và bọn t gọi là cái L :)))",
         max_chars=500,
     )
 with c_btn:
@@ -58,58 +58,49 @@ if cau_tho and cau_tho.strip():
             f"""
             <div class="sentinel-card" style="border-left: 5px solid #64748B;">
                 <div style="font-weight:700;color:#334155;margin-bottom:8px;">TRƯỚC XỬ LÝ (RAW) — {len(cau_tho)} ký tự</div>
-                <div style="background:#F8FAFC;padding:12px;border-radius:8px;border:1px solid #E2E8F0;font-size:0.95rem;color:#0F172A;">
-                    {html.escape(cau_tho)}
-                </div>
-                <div style="margin-top:12px;font-size:0.86rem;color:#475569;">
-                    <b>Đã phát hiện:</b><br><div style="margin-top:6px;">{badges_html}</div>
-                </div>
+                <div style="font-size:0.95rem;color:#0F172A;margin-bottom:12px;">{html.escape(cau_tho)}</div>
+                <div style="font-size:0.82rem;color:#475569;margin-bottom:4px;"><b>Đã phát hiện:</b></div>
+                <div>{badges_html}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
     with col_after:
-        tokens = van_ban_seg.split() if van_ban_seg else []
-        chips_html = "".join([f'<span class="token-chip">{html.escape(t)}</span>' for t in tokens]) or "<i>(Rỗng sau khi làm sạch)</i>"
-
+        chips_html = " ".join(
+            f'<span class="mono-tag" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;">{html.escape(tok)}</span>'
+            for tok in van_ban_seg.split()
+        )
         st.markdown(
             f"""
             <div class="sentinel-card" style="border-left: 5px solid #2563EB;">
-                <div style="font-weight:700;color:#1D4ED8;margin-bottom:8px;">SAU LÀM SẠCH & TÁCH TỪ — {len(van_ban_seg)} ký tự ({len(tokens)} token)</div>
-                <div style="font-size:0.88rem;color:#475569;margin-bottom:6px;">
-                    <b>Sau làm sạch (<code>lam_sach</code>):</b> <code>{html.escape(van_ban_sach)}</code>
-                </div>
-                <div style="font-size:0.88rem;color:#475569;margin-top:10px;">
-                    <b>Từng từ đưa vào mô hình (<code>tach_tu</code> — từ ghép nối bằng <code>_</code>):</b>
-                    <div style="margin-top:6px;">{chips_html}</div>
-                </div>
+                <div style="font-weight:700;color:#1D4ED8;margin-bottom:8px;">SAU LÀM SẠCH + TÁCH TỪ (PYVI) — {len(van_ban_seg)} ký tự</div>
+                <div style="font-size:0.92rem;color:#334155;margin-bottom:8px;"><b>Làm sạch:</b> <code>{html.escape(van_ban_sach)}</code></div>
+                <div style="font-size:0.82rem;color:#475569;margin-bottom:6px;"><b>Từng token đưa vào mô hình (từ ghép nối bằng <code>_</code>):</b></div>
+                <div style="line-height:1.9;">{chips_html}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
 st.markdown("---")
-col_table, col_chart = st.columns([1.35, 1], gap="large")
+col_table, col_chart = st.columns([1.3, 1], gap="large")
 
 with col_table:
-    st.subheader("📋 Bảng ví dụ Trước / Sau xử lý")
-    truoc_sau_csv = os.path.join(OUTPUTS_DIR, "truoc_sau_xu_ly.csv")
-    if os.path.isfile(truoc_sau_csv):
-        try:
-            df_ts = pd.read_csv(truoc_sau_csv)
-            st.dataframe(df_ts, use_container_width=True, hide_index=True)
-        except Exception as e:
-            st.warning(f"Không đọc được file `outputs/truoc_sau_xu_ly.csv`: {e}")
+    st.subheader("📋 Bảng đối chiếu Trước & Sau xử lý (trích từ ViHSD)")
+    csv_path = os.path.join(OUTPUTS_DIR, "truoc_sau_xu_ly.csv")
+    if os.path.isfile(csv_path):
+        df_ts = pd.read_csv(csv_path)
+        st.dataframe(df_ts, use_container_width=True, hide_index=True)
     else:
-        thong_bao_thieu_file("outputs/truoc_sau_xu_ly.csv", "python scripts/evaluate_final.py")
+        thong_bao_thieu_file("outputs/truoc_sau_xu_ly.csv", "notebooks/01_du_lieu_va_tien_xu_ly.ipynb")
 
 with col_chart:
-    st.subheader("📈 Thống kê dấu hiệu nhiễu toàn bộ dữ liệu")
-    ban_img = os.path.join(OUTPUTS_DIR, "thong_ke_dau_hieu_ban.png")
-    if os.path.isfile(ban_img):
-        st.image(ban_img, caption="Tỷ lệ % bình luận chứa từng dấu hiệu cần xử lý (outputs/thong_ke_dau_hieu_ban.png)", use_container_width=True)
+    st.subheader("📊 Tỷ lệ bình luận chứa dấu hiệu nhiễu")
+    img_path = os.path.join(OUTPUTS_DIR, "thong_ke_dau_hieu_ban.png")
+    if os.path.isfile(img_path):
+        st.image(img_path, caption="Tỷ lệ % bình luận chứa từng dấu hiệu cần xử lý trên toàn bộ dữ liệu", use_container_width=True)
     else:
-        thong_bao_thieu_file("outputs/thong_ke_dau_hieu_ban.png", "python scripts/evaluate_final.py")
+        thong_bao_thieu_file("outputs/thong_ke_dau_hieu_ban.png", "notebooks/01_du_lieu_va_tien_xu_ly.ipynb")
 
 hien_chan_trang_canh_bao()

@@ -29,29 +29,6 @@ REQUIRED_KEYS = {
     "do_tre_ms",
 }
 
-TWENTY_SAMPLE_SENTENCES = [
-    "Video hôm nay chia sẻ kiến thức rất bổ ích, cảm ơn tác giả nhiều nhé!",
-    "Đồ ngu dốt biến khỏi đây đi đồ rác rưởi",
-    "Cái mặt nhìn thấy ghét, ăn nói vô học thật sự",
-    "Thật tuyệt vời! Chúc mừng đội tuyển đã cố gắng hết sức ❤️",
-    "m.à.y n.g.u vcl đm ko bt j hết",
-    "Sản phẩm dùng ổn trong tầm giá, giao hàng hơi chậm một chút.",
-    "Lũ súc vật này sống chỉ tổ chật đất, biến hết đi!",
-    "Trình độ cỡ này mà cũng đòi lên mạng dạy đời người khác à? Hài hước thật.",
-    "Anh ơi cho em hỏi bài hát ở phút thứ 3 tên là gì vậy ạ?",
-    "Đm thằng lừa đảo, trả tiền cho bố mày ngay!",
-    "Giọng đọc truyền cảm quá, nghe buổi tối rất dễ ngủ.",
-    "Bọn vô ý thức xả rác bừa bãi làm bẩn cả khu phố.",
-    "Mày bị điên à mà phát biểu câu ngớ ngẩn thế hả?",
-    "Cảm ơn bác sĩ đã tư vấn nhiệt tình cho gia đình em.",
-    "Thằng chó này cút ngay khỏi kênh của tao!",
-    "Hôm nay trời đẹp quá, đi dạo quanh hồ Tây rất mát.",
-    "Ăn hại đái khai, chả làm được tích sự gì cho đời.",
-    "Chúc kênh ngày càng phát triển và ra nhiều video hay hơn nữa.",
-    "Cái lũ mất dạy, mở mồm ra là chửi bới người khác.",
-    "Món này nấu thêm chút hành lá và tiêu xay sẽ dậy mùi thơm hơn.",
-]
-
 STREAMLIT_PAGES = [
     "app/Home.py",
     "app/pages/1_Thu_nghiem.py",
@@ -60,6 +37,12 @@ STREAMLIT_PAGES = [
     "app/pages/4_YouTube.py",
     "app/pages/5_Han_che_dao_duc.py",
 ]
+
+
+def _load_20_real_val_sentences() -> list[str]:
+    val_path = os.path.join(ROOT_DIR, "data", "processed", "03_val.csv")
+    df_val = pd.read_csv(val_path)
+    return df_val["text"].dropna().astype(str).head(20).tolist()
 
 
 def test_edge_cases_phan_loai():
@@ -73,7 +56,7 @@ def test_edge_cases_phan_loai():
         assert res["diem_toxic"] == 0.0
 
     # 2. Câu quá dài (>500 ký tự)
-    long_inp = "Bình luận thử nghiệm rất dài " * 30  # > 800 ký tự
+    long_inp = "Bác Trần Dần trả lời câu hỏi cuối rất hay " * 15  # > 600 ký tự
     assert len(long_inp) > 500
     res_long = phan_loai(long_inp)
     assert REQUIRED_KEYS.issubset(res_long.keys())
@@ -87,8 +70,10 @@ def test_edge_cases_phan_loai():
         assert res_emo["nhan_id"] == 0
         assert res_emo["diem_toxic"] < 0.5
 
-    # 4. Câu teencode và chèn ký tự
-    res_tc = phan_loai("m.à.y n.g.u vcl đm ko bt j hết")
+    # 4. Câu thật có teencode từ tập Test ViHSD
+    res_tc = phan_loai(
+        "Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi"
+    )
     assert REQUIRED_KEYS.issubset(res_tc.keys())
     assert res_tc["nhan_id"] in (1, 2)
     assert res_tc["diem_toxic"] > 0.5
@@ -101,13 +86,16 @@ def test_edge_cases_phan_loai():
 
 
 def test_20_sample_sentences_contract():
-    """Kiểm tra 20 câu mẫu trả về đúng khóa, đúng kiểu dữ liệu và xác suất hợp lệ."""
+    """Kiểm tra 20 câu thật từ 03_val.csv trả về đúng khóa, đúng kiểu dữ liệu và xác suất hợp lệ."""
     cfg = doc_cau_hinh()
     assert "models_available" in cfg
     assert len(cfg["models_available"]) >= 1
     ten_mh = cfg["best_model"]
 
-    for cau in TWENTY_SAMPLE_SENTENCES:
+    twenty_real_sentences = _load_20_real_val_sentences()
+    assert len(twenty_real_sentences) == 20
+
+    for cau in twenty_real_sentences:
         res = phan_loai(cau, ten_mo_hinh=ten_mh)
         assert REQUIRED_KEYS.issubset(res.keys()), f"Thiếu khóa trong kết quả cho câu: {cau}"
         assert isinstance(res["binh_luan"], str)
@@ -121,15 +109,18 @@ def test_20_sample_sentences_contract():
         assert isinstance(res["mo_hinh"], str)
         assert isinstance(res["do_tre_ms"], float) and res["do_tre_ms"] >= 0.0
 
-    # Kiểm tra phân loại hàng loạt trên 20 câu
-    df_batch = phan_loai_hang_loat(TWENTY_SAMPLE_SENTENCES, ten_mo_hinh=ten_mh)
+    # Kiểm tra phân loại hàng loạt trên 20 câu thật
+    df_batch = phan_loai_hang_loat(twenty_real_sentences, ten_mo_hinh=ten_mh)
     assert isinstance(df_batch, pd.DataFrame)
     assert len(df_batch) == 20
     expected_cols = {"text", "sau_xu_ly", "nhan", "do_tin_cay", "diem_toxic"}
     assert expected_cols.issubset(df_batch.columns)
 
-    # Kiểm tra tìm từ gây độc
-    tu_doc = tim_tu_gay_doc("Đồ ngu dốt biến khỏi đây đi", ten_mo_hinh=ten_mh)
+    # Kiểm tra tìm từ gây độc trên câu thật từ 03_test.csv
+    tu_doc = tim_tu_gay_doc(
+        "Địt mẹ, ông thử ăn cá kho đi, càng hâm lại nó ăn lại càng ngon vailone :)",
+        ten_mo_hinh=ten_mh,
+    )
     assert isinstance(tu_doc, list)
     assert len(tu_doc) >= 1
     assert any(item["gay_doc"] for item in tu_doc)

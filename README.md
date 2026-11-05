@@ -23,9 +23,9 @@ Từ **33.397** dòng dữ liệu thô ban đầu (`data/raw/comments.csv`), sau
 
 ---
 
-## 📊 2. Kết quả Thực nghiệm trên Tập Test (`outputs/bang_so_sanh_mo_hinh.csv`)
+## 📊 2. Kết quả Thực nghiệm Chính thức trên Tập Test (`outputs/bang_so_sanh_mo_hinh.csv`)
 
-> **Nguyên tắc đánh giá:** Toàn bộ quá trình chọn mô hình và tinh chỉnh siêu tham số (76 thử nghiệm trong `outputs/thu_nghiem_baseline.csv`) chỉ sử dụng tập **Validation**. Tập **Test (2.986 mẫu)** chỉ được chấm đúng 1 lần duy nhất ở bước đánh giá cuối cùng (`scripts/evaluate_final.py`).
+> **Nguyên tắc đánh giá:** Toàn bộ quá trình chọn mô hình và tinh chỉnh siêu tham số (76 thử nghiệm trong `outputs/thu_nghiem_baseline.csv`) chỉ sử dụng tập **Validation**. Tập **Test (2.986 mẫu)** chỉ được chấm đúng 1 lần duy nhất ở bước đánh giá cuối cùng (`scripts/evaluate_final.py`) để làm kết quả chính thức.
 
 | Mô hình | Accuracy (%) | F1-macro (%) | Toxic Precision (%) | Toxic Recall (%) | F1 CLEAN (%) | F1 OFFENSIVE (%) | F1 HATE (%) | Độ trễ (ms/câu) | Kích thước (MB) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -46,7 +46,7 @@ final-SIC/
 │       ├── 1_Thu_nghiem.py             # Trang 1: Thử nghiệm trực tiếp & tô đỏ từ gây độc (LOTO)
 │       ├── 2_Tien_xu_ly.py             # Trang 2: Minh họa từng bước tiền xử lý & bảng đối chiếu
 │       ├── 3_Danh_gia_mo_hinh.py       # Trang 3: Bảng so sánh, Ma trận nhầm lẫn & Phân tích lỗi FP/FN
-│       ├── 4_YouTube.py                # Trang 4: Quét bình luận YouTube theo link (có chế độ dự phòng)
+│       ├── 4_YouTube.py                # Trang 4: Quét bình luận YouTube theo link (API thật + dự phòng)
 │       └── 5_Han_che_dao_duc.py        # Trang 5: Hạn chế kỹ thuật & Đạo đức AI
 ├── data/
 │   └── processed/                      # Dữ liệu chuẩn đã làm sạch & tách từ (03_train/val/test.csv)
@@ -57,8 +57,8 @@ final-SIC/
 │   └── phobert/best/                   # (Tùy chọn) Trọng số PhoBERT fine-tuned tải về từ Colab
 ├── notebooks/                          # Jupyter Notebooks phân tích & huấn luyện
 │   ├── 01_du_lieu_va_tien_xu_ly.ipynb  # Khám phá dữ liệu & kiểm tra hàm tiền xử lý
-│   ├── 02_baseline_tfidf.ipynb         # Thực nghiệm TF-IDF + LinearSVC
-│   ├── 03_phobert.ipynb                # Notebook PhoBERT cục bộ
+│   ├── 02_baseline.ipynb               # Thực nghiệm TF-IDF + LinearSVC
+│   ├── 03_phobert.ipynb                # Notebook PhoBERT cục bộ (vinai/phobert-base)
 │   └── 03_phobert_colab.ipynb          # Notebook tự chứa chạy PhoBERT trên Google Colab GPU
 ├── outputs/                            # Toàn bộ bảng biểu CSV & biểu đồ PNG sinh từ code chạy thật
 │   ├── bang_so_sanh_mo_hinh.csv        # Bảng tổng hợp kết quả chính thức trên tập Test
@@ -67,8 +67,7 @@ final-SIC/
 │   ├── phan_tich_do_dai_cau.csv        # Phân tích F1 theo độ dài câu (ngắn / trung bình / dài)
 │   ├── phan_tich_nhieu_dac_biet.csv    # Phân tích tỷ lệ lỗi trên câu teencode, chèn ký tự, emoji
 │   ├── top15_offensive_doan_sai.csv    # Top 15 câu OFFENSIVE bị đoán sai kèm nhận xét
-│   ├── truoc_sau_xu_ly.csv             # 20 câu mẫu minh họa trước & sau tiền xử lý
-│   ├── ket_qua_youtube.csv             # 120 bình luận mẫu phân loại thật (dùng khi mất mạng)
+│   ├── truoc_sau_xu_ly.csv             # 8 câu thật từ ViHSD minh họa trước & sau tiền xử lý
 │   └── *.png                           # Các biểu đồ phân bố nhãn, ma trận nhầm lẫn, so sánh mô hình
 ├── reports/                            # Báo cáo tổng kết & kịch bản thuyết trình
 │   ├── bao_cao_du_an.md                # Báo cáo toàn văn dự án (số liệu trích xuất 100% từ file thật)
@@ -77,9 +76,10 @@ final-SIC/
 │   ├── check_data.py                   # Kiểm tra tính toàn vẹn của data/processed/
 │   ├── run_baseline.py                 # Chạy mô hình Baseline gốc trên tập Val
 │   ├── tune_baseline.py                # Chạy 76 thử nghiệm tinh chỉnh Baseline trên tập Val
-│   ├── run_phobert.py                  # Huấn luyện PhoBERT (hỗ trợ cờ --smoke kiểm tra nhanh)
+│   ├── run_phobert.py                  # Huấn luyện vinai/phobert-base (hỗ trợ cờ --smoke)
 │   ├── build_config.py                 # Tự động quét đĩa và sinh models/config.json
-│   └── evaluate_final.py               # Chấm tập Test đúng 1 lần, xuất bảng & biểu đồ cho Web
+│   ├── evaluate_final.py               # Chấm tập Test đúng 1 lần, xuất bảng & biểu đồ cho Web
+│   └── lay_youtube_demo.py             # Lấy 100-200 bình luận YouTube thật bằng API key (getpass)
 ├── src/                                # Thư viện lõi của hệ thống
 │   ├── preprocess.py                   # Hàm chuẩn: lam_sach, tach_tu, phat_hien (42 từ teencode)
 │   ├── inference.py                    # Hợp đồng hàm suy luận: doc_cau_hinh, tai_mo_hinh, phan_loai...
@@ -132,7 +132,7 @@ python scripts/run_baseline.py
 python scripts/tune_baseline.py
 ```
 
-### Bước 3: Huấn luyện PhoBERT (trên Google Colab GPU hoặc máy có GPU)
+### Bước 3: Huấn luyện PhoBERT (`vinai/phobert-base`) trên Google Colab GPU
 - Mở file `notebooks/03_phobert_colab.ipynb` trên **Google Colab** (chọn Runtime **T4 GPU**), hoặc chạy kiểm tra nhanh cục bộ bằng cờ `--smoke`:
 ```powershell
 python scripts/run_phobert.py --smoke
@@ -144,48 +144,47 @@ python scripts/build_config.py
 python scripts/evaluate_final.py
 ```
 
-### Bước 5: Chạy bộ kiểm thử tự động (`pytest`)
+### Bước 5: Lấy bình luận YouTube thật để lưu dự phòng cho buổi Demo (tùy chọn)
+```powershell
+python scripts/lay_youtube_demo.py
+```
+*(Script sẽ hỏi link video và nhập ẩn API key qua `getpass`, tải 100–200 bình luận thật, phân loại và lưu vào `outputs/ket_qua_youtube.csv` kèm cột `video_id` và `ngay_lay`).*
+
+### Bước 6: Chạy bộ kiểm thử tự động (`pytest`) & Mở Web Streamlit
 ```powershell
 python -m pytest tests/test_inference.py -v
-```
-
-### Bước 6: Khởi động ứng dụng Web Streamlit
-```powershell
 streamlit run app/Home.py
 ```
-Ứng dụng sẽ tự động mở tại địa chỉ `http://localhost:8501`.
+Ứng dụng sẽ mở tại địa chỉ `http://localhost:8501`.
 
 ---
 
 ## 📦 6. Hướng dẫn Đặt Mô hình (`models/`) từ Google Drive / Colab
 
-Vì các file trọng số mô hình có dung lượng lớn nên không đẩy trực tiếp lên Git (`.gitignore` bỏ qua `models/`). Khi tải mô hình về máy cá nhân, bạn đặt đúng vào đường dẫn sau:
+Vì các file trọng số mô hình có dung lượng lớn nên không đẩy trực tiếp lên Git (`.gitignore` bỏ qua `models/*` trừ `models/config.json`). Khi tải mô hình về máy cá nhân, bạn đặt đúng vào đường dẫn sau:
 
 1. **Mô hình Baseline (bắt buộc để chạy Web ngay):**
    - Đặt file `baseline_calibrated.pkl` vào thư mục `models/baseline_calibrated.pkl` (hoặc chạy lệnh `python scripts/tune_baseline.py` mất ~2 phút để tự sinh file này trên máy).
 2. **Mô hình PhoBERT (tùy chọn — sau khi chạy xong `03_phobert_colab.ipynb`):**
-   - Giải nén file `phobert_ket_qua_colab.zip` tải từ Google Drive vào gốc dự án sao cho thư mục `models/phobert/best/` chứa `config.json`, `model.safetensors` (hoặc `pytorch_model.bin`), `vocab.txt`, `bpe.codes`.
+   - Giải nén file `phobert_ket_qua_buoc3.zip` tải từ Google Drive vào gốc dự án sao cho thư mục `models/phobert/best/` chứa `config.json`, `model.safetensors` (hoặc `pytorch_model.bin`), `vocab.txt`, `bpe.codes`.
    - Giải nén thêm `outputs/phobert_val_predictions.csv` và `outputs/phobert_test_predictions.csv` vào thư mục `outputs/`.
    - Chạy lại:
      ```powershell
      python scripts/build_config.py
      python scripts/evaluate_final.py
      ```
-   - Giao diện Web sẽ tự động nhận diện thêm `PhoBERT (fine-tune)` trong hộp chọn mô hình mà không cần sửa bất kỳ dòng code nào.
+   - Giao diện Web sẽ tự động nhận diện thêm `PhoBERT (fine-tune)` trong hộp chọn mô hình.
 
 ---
 
 ## 🔑 7. Hướng dẫn Lấy YouTube Data API v3 Key (Cho Trang 4 — YouTube)
 
-Trang **🎬 Phân tích bình luận YouTube** hỗ trợ 2 chế độ:
-- **Chế độ dữ liệu mẫu có sẵn (không cần mạng / không cần API key):** Bấm nút **"📂 Dùng dữ liệu mẫu có sẵn"** để nạp ngay 120 bình luận từ `outputs/ket_qua_youtube.csv`.
-- **Chế độ tải bình luận trực tiếp từ YouTube:**
-  1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
-  2. Tạo một Project mới -> vào mục **APIs & Services** -> **Library**.
-  3. Tìm kiếm **"YouTube Data API v3"** và bấm **Enable**.
-  4. Vào mục **APIs & Services** -> **Credentials** -> bấm **Create Credentials** -> chọn **API key**.
-  5. Sao chép mã API key (bắt đầu bằng `AIza...`) và dán vào ô **"🔑 YouTube Data API v3 Key"** trên giao diện Web.
+1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
+2. Tạo một Project mới -> vào mục **APIs & Services** -> **Library**.
+3. Tìm kiếm **"YouTube Data API v3"** và bấm **Enable**.
+4. Vào mục **APIs & Services** -> **Credentials** -> bấm **Create Credentials** -> chọn **API key**.
+5. Dùng API key này trực tiếp trên Trang 4 của Web hoặc chạy `python scripts/lay_youtube_demo.py` trước buổi bảo vệ để lưu file dự phòng `outputs/ket_qua_youtube.csv` từ bình luận YouTube thật (nếu chưa chạy, chế độ dự phòng trên Web sẽ hiển thị thông báo *"Chưa có kết quả"*).
 
 > 🔒 **Cam kết bảo mật & quyền riêng tư:**
-> - Mã API key chỉ lưu tạm trong phiên trình duyệt (`password input`), **tuyệt đối không ghi ra file, log hay lịch sử Git**.
+> - Mã API key chỉ nhập ẩn qua `getpass` hoặc ô mật khẩu trên Web, **tuyệt đối không ghi ra file, log hay lịch sử Git**.
 > - Hệ thống **không lưu tên người bình luận (`authorDisplayName`) hay ID kênh**, chỉ tải nội dung bình luận công khai, số lượt thích và thời gian đăng (tối đa 500 bình luận/video).

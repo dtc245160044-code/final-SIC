@@ -13,25 +13,26 @@ cfg = cai_dat_trang(tieu_de="Thử nghiệm", icon="🧪")
 
 st.title("🧪 Thử nghiệm phân loại bình luận")
 st.markdown(
-    "Nhập một bình luận tiếng Việt hoặc chọn câu mẫu bên dưới rồi bấm **Phân tích**. "
+    "Nhập một bình luận tiếng Việt hoặc chọn câu mẫu trích từ tập **Test (ViHSD)** bên dưới rồi bấm **Phân tích**. "
     "Mọi kết quả đều do mô hình chạy thật theo thời gian thực."
 )
 
+# 4 câu trích nguyên văn từ data/processed/03_test.csv
 MAU_THU = {
-    "Mẫu 1: Teencode & né lọc": "hàng như l** ý mn đừng mua lừa đảo đấy k dùng dc đâu https://shopee.vn/fake-shop",
-    "Mẫu 2: Mỉa mai / ẩn ý": "Trình độ cỡ này mà cũng lên mạng dạy đời người khác được thì chịu rồi đấy :))",
-    "Mẫu 3: Bình luận khen": "Video bổ ích và chất lượng quááááá 😍 chúc kênh phát triển hơn nữa nhé!",
-    "Mẫu 4: Chửi bới trực diện": "thằng này ngu như bò, câm miệng và cút khỏi đây đi",
+    "Mẫu 1: Khen ngợi (Test #CLEAN)": "Bác Trần Dần trả lời câu hỏi cuối rất hay....rất sáng suốt 👍",
+    "Mẫu 2: Teencode công kích (Test #HATE)": "Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi",
+    "Mẫu 3: Mỉa mai ngầm (Test #OFFENSIVE)": "Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á",
+    "Mẫu 4: Từ tục khen đồ ăn (Test #FP)": "Địt mẹ, ông thử ăn cá kho đi, càng hâm lại nó ăn lại càng ngon vailone :)",
 }
 
 if "text_thu_nghiem" not in st.session_state:
-    st.session_state["text_thu_nghiem"] = MAU_THU["Mẫu 1: Teencode & né lọc"]
+    st.session_state["text_thu_nghiem"] = MAU_THU["Mẫu 1: Khen ngợi (Test #CLEAN)"]
 
 col_input, col_output = st.columns([1.05, 1.15], gap="large")
 
 with col_input:
     st.markdown("#### ✍️ Nhập bình luận cần kiểm tra")
-    st.caption("Bấm nút mẫu để điền nhanh câu vào ô nhập (sau đó bấm **Phân tích** để chạy mô hình):")
+    st.caption("Bấm nút mẫu (trích từ `03_test.csv`) để điền nhanh câu vào ô nhập, sau đó bấm **Phân tích**:")
 
     btn_cols = st.columns(2)
     for idx, (ten_mau, noi_dung_mau) in enumerate(MAU_THU.items()):
@@ -81,7 +82,6 @@ with col_output:
                 tu_doc = tim_tu_gay_doc(van_ban, ten_mo_hinh=chon_mo_hinh)
                 the_ket_qua_phan_loai(kq, tu_gay_doc=tu_doc)
 
-                # Thanh tiến trình Điểm độc hại & Xác suất từng nhãn
                 st.markdown("**Điểm độc hại tổng hợp (`P(Xúc phạm) + P(Thù ghét)`):**")
                 st.progress(min(max(float(kq["diem_toxic"]), 0.0), 1.0))
 
