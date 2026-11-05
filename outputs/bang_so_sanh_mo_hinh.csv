@@ -1,0 +1,2 @@
+Mô hình,Accuracy (%),F1-macro (%),Toxic Precision (%),Toxic Recall (%),F1 CLEAN (%),F1 OFFENSIVE (%),F1 HATE (%),Độ trễ (ms/bình luận),Kích thước (MB)
+TF-IDF + LinearSVC (Calibrated),87.74,67.03,74.59,68.24,94.13,41.36,65.61,5.89,9.42

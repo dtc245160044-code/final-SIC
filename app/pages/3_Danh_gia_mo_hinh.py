@@ -183,6 +183,25 @@ with tab_loi:
 
             with st.expander("📋 Xem toàn bộ bảng outputs/phan_tich_loi.csv"):
                 st.dataframe(df_loi, use_container_width=True, hide_index=True)
+
+            # Hiển thị thêm 3 phân tích chuyên sâu trên tập Test (nếu có)
+            len_csv = os.path.join(OUTPUTS_DIR, "phan_tich_do_dai_cau.csv")
+            len_png = os.path.join(OUTPUTS_DIR, "f1_theo_do_dai_cau.png")
+            if os.path.isfile(len_csv):
+                with st.expander("📏 Phân tích chuyên sâu 1: Hiệu năng theo độ dài câu (ngắn / trung bình / dài)"):
+                    st.dataframe(pd.read_csv(len_csv), use_container_width=True, hide_index=True)
+                    if os.path.isfile(len_png):
+                        st.image(len_png, caption="Biểu đồ F1-macro theo nhóm độ dài câu trên tập Test", use_container_width=True)
+
+            nhieu_csv = os.path.join(OUTPUTS_DIR, "phan_tich_nhieu_dac_biet.csv")
+            if os.path.isfile(nhieu_csv):
+                with st.expander("🔤 Phân tích chuyên sâu 2: Tỷ lệ lỗi theo đặc tính nhiễu (teencode, chèn ký tự, kéo dài, emoji)"):
+                    st.dataframe(pd.read_csv(nhieu_csv), use_container_width=True, hide_index=True)
+
+            off15_csv = os.path.join(OUTPUTS_DIR, "top15_offensive_doan_sai.csv")
+            if os.path.isfile(off15_csv):
+                with st.expander("⚠️ Phân tích chuyên sâu 3: Top 15 câu Xúc phạm (OFFENSIVE) bị đoán sai nhiều nhất kèm nhận xét"):
+                    st.dataframe(pd.read_csv(off15_csv), use_container_width=True, hide_index=True)
         except Exception as e:
             st.warning(f"Không đọc được `outputs/phan_tich_loi.csv`: {e}")
     else:
