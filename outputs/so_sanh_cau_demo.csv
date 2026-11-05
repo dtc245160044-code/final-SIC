@@ -1,0 +1,5 @@
+câu,nhãn thật,TF-IDF + LinearSVC (Calibrated): đoán,TF-IDF + LinearSVC (Calibrated): điểm độc hại,PhoBERT (fine-tune): đoán,PhoBERT (fine-tune): điểm độc hại
+Bác Trần Dần trả lời câu hỏi cuối rất hay....rất sáng suốt 👍,Bình thường,Bình thường,0.0469,Bình thường,0.0202
+"Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi",Xúc phạm,Thù ghét,0.9125,Thù ghét,0.97
+Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á,Xúc phạm,Bình thường,0.1231,Xúc phạm,0.7832
+"Địt mẹ, ông thử ăn cá kho đi, càng hâm lại nó ăn lại càng ngon vailone :)",Bình thường,Xúc phạm,0.9852,Xúc phạm,0.9787

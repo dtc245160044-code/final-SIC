@@ -20,7 +20,7 @@ st.markdown(
 # 4 câu trích nguyên văn từ data/processed/03_test.csv
 MAU_THU = {
     "Mẫu 1: Khen ngợi (Test #CLEAN)": "Bác Trần Dần trả lời câu hỏi cuối rất hay....rất sáng suốt 👍",
-    "Mẫu 2: Teencode công kích (Test #HATE)": "Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi",
+    "Mẫu 2: Teencode bức xúc (Test #OFFENSIVE)": "Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi",
     "Mẫu 3: Mỉa mai ngầm (Test #OFFENSIVE)": "Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á",
     "Mẫu 4: Từ tục khen đồ ăn (Test #FP)": "Địt mẹ, ông thử ăn cá kho đi, càng hâm lại nó ăn lại càng ngon vailone :)",
 }

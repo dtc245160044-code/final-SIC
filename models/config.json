@@ -13,10 +13,11 @@
     1,
     2
   ],
-  "best_model": "TF-IDF + LinearSVC (Calibrated)",
+  "best_model": "PhoBERT (fine-tune)",
   "max_len": 128,
   "models_available": [
-    "TF-IDF + LinearSVC (Calibrated)"
+    "TF-IDF + LinearSVC (Calibrated)",
+    "PhoBERT (fine-tune)"
   ],
   "is_demo_data": false
 }

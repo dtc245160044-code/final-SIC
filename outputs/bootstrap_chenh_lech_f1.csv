@@ -1,0 +1,2 @@
+So sánh,Chênh lệch F1-macro trên Test (điểm %),CI95 thấp (điểm %),CI95 cao (điểm %),Tỷ lệ lần bootstrap PhoBERT cao hơn (%),Số lần bootstrap,seed
+PhoBERT (fine-tune) - TF-IDF + LinearSVC (Calibrated),0.45,-1.98,2.99,64.1,2000,42

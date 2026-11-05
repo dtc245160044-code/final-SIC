@@ -1,0 +1,12 @@
+{
+  "model_name": "vinai/phobert-base",
+  "device": "Tesla T4",
+  "epochs": 4,
+  "batch_size": 16,
+  "grad_accum": 2,
+  "train_time_sec": 483.64,
+  "model_size_mb": 516.95,
+  "val_f1_macro": 0.6841,
+  "val_accuracy": 0.8526,
+  "baseline_val_f1_macro_ref": 0.6819
+}

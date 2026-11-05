@@ -1,0 +1,3 @@
+Mô hình,FP (Bình thường bị báo độc hại),FN (Độc hại bị bỏ sót),Số câu Bình thường,Số câu độc hại,Tỷ lệ báo nhầm trên câu Bình thường (%),Recall CLEAN (%),Recall OFFENSIVE (%),Recall HATE (%),thật 0 -> đoán 0,thật 0 -> đoán 1,thật 0 -> đoán 2,thật 1 -> đoán 0,thật 1 -> đoán 1,thật 1 -> đoán 2,thật 2 -> đoán 0,thật 2 -> đoán 1,thật 2 -> đoán 2
+TF-IDF + LinearSVC (Calibrated),123,168,2457,529,5.01,94.99,39.11,63.3,2334,61,62,88,79,35,80,40,207
+PhoBERT (fine-tune),275,98,2457,529,11.19,88.81,61.39,68.5,2182,149,126,44,124,34,54,49,224

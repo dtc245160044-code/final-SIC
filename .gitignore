@@ -2,6 +2,7 @@
 *.key
 ket_qua_*.zip
 phobert_ket_qua_*.zip
+phobert_ket_qua_*/
 models/*
 !models/config.json
 data/raw/

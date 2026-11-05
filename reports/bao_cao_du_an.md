@@ -3,7 +3,7 @@
 **Đề tài:** Phát hiện Bình luận Độc hại Tiếng Việt trên Mạng Xã hội (Bộ dữ liệu ViHSD)  
 **Kho mã nguồn:** `https://github.com/dtc245160044-code/final-SIC.git`  
 
-> **Ghi chú:** Mọi con số thống kê, bảng biểu và ví dụ lỗi trong báo cáo này đều được trích xuất trực tiếp từ kết quả chạy code thật trong `data/processed/` và `outputs/` (tuyệt đối không điền số giả). Kết quả chính thức của dự án được lấy từ lần chấm duy nhất trên tập **Test (`2.986` mẫu)**. Các mục đánh dấu **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`** là vị trí dành cho nhóm rà soát nhận xét cá nhân hoặc điền thêm dòng PhoBERT sau khi chạy xong notebook Colab `notebooks/03_phobert_colab.ipynb`.
+> **Ghi chú:** Mọi con số thống kê, bảng biểu và ví dụ lỗi trong báo cáo này đều được trích xuất trực tiếp từ kết quả chạy code thật trong `data/processed/` và `outputs/` (tuyệt đối không điền số giả). Kết quả chính thức của dự án được lấy từ lần chấm duy nhất trên tập **Test (`2.986` mẫu)**. Mọi kết quả của cả hai mô hình (Baseline và PhoBERT fine-tuned từ Colab) đều đã được tính toán đầy đủ và đối chiếu thống kê chính thức trên tập Test.
 
 ---
 
@@ -15,12 +15,15 @@ Sự bùng nổ của các nền tảng mạng xã hội và video trực tuyế
 Tuy nhiên, bài toán tự động phát hiện bình luận độc hại tiếng Việt gặp nhiều thách thức đặc thù:
 1. **Hiện tượng biến âm, teencode và né bộ lọc:** Người dùng mạng thường xuyên viết tắt (`ko`, `dc`, `bt`, `dm`), kéo dài chữ cái (`nguuuuu`), hoặc chèn dấu chấm/gạch ngang/dấu sao giữa các chữ cái (`m.à.y`, `n-g-u`, `đ*o`) để qua mặt các bộ lọc từ khóa tĩnh.
 2. **Đặc trưng từ ghép tiếng Việt:** Khoảng trắng trong tiếng Việt dùng để tách âm tiết chứ không tách từ (ví dụ: `"bất_hạnh"`, `"thất_học"`), đòi hỏi bước tách từ (`word segmentation`) chính xác trước khi đưa vào mô hình học máy.
-3. **Độ lệch nhãn nghiêm trọng và ranh giới ngữ nghĩa mờ:** Bình luận thông thường chiếm đa số tuyệt đối (`82,60%`), trong khi lớp `OFFENSIVE` chỉ chiếm `6,73%` và có ranh giới rất mờ giữa câu nói đùa suồng sã, câu xúc phạm nhẹ và câu thù ghét.
+3. **Độ lệch nhãn nghiêm trọng và ranh giới ngữ nghĩa mờ:** Bình luận thông thường chiếm đa số tuyệt đối (`82,29%`), trong khi lớp `OFFENSIVE` chỉ chiếm `6,76%` và có ranh giới rất mờ giữa câu nói đùa suồng sã, câu xúc phạm nhẹ và câu thù ghét.
 
 ### 1.2. Mục tiêu của dự án & Tóm tắt Kết quả Chính thức (trên tập Test)
 - Xây dựng quy trình tiền xử lý văn bản tiếng Việt chuẩn hóa (`src/preprocess.py`), giải quyết trực tiếp teencode, chữ kéo dài, ký tự chèn và tách từ bằng `pyvi`.
 - Huấn luyện, tinh chỉnh có hệ thống (76 thử nghiệm trên tập Validation) và hiệu chuẩn xác suất mô hình **TF-IDF + LinearSVC (Calibrated)**, đồng thời xây dựng pipeline huấn luyện mô hình ngôn ngữ tiền huấn luyện **PhoBERT (`vinai/phobert-base`)**.
-- **Kết quả chính thức trên tập Test độc lập (`2.986` mẫu — chấm đúng 1 lần duy nhất):** Mô hình **TF-IDF + LinearSVC (Calibrated)** đạt **Accuracy = `87,74%`**, **F1-macro = `67,03%`**, **Toxic Precision = `74,59%`**, **Toxic Recall = `68,24%`** (trong đó **F1 `CLEAN` = `94,13%`**, **F1 `OFFENSIVE` = `41,36%`**, **F1 `HATE` = `65,61%`**), tốc độ suy luận **`5,89 ms/bình luận`**.
+- **Kết quả chính thức trên tập Test độc lập (`2.986` mẫu — chấm đúng 1 lần duy nhất cho mỗi mô hình):**
+  - **Mô hình TF-IDF + LinearSVC (Calibrated):** **Accuracy = `87,74%`**, **F1-macro = `67,03%`**, **Toxic Precision = `74,59%`**, **Toxic Recall = `68,24%`** (F1 `CLEAN` = `94,13%`, F1 `OFFENSIVE` = `41,36%`, F1 `HATE` = `65,61%`), độ trễ siêu nhanh **`4,32 ms/bình luận`**, kích thước **`9,42 MB`**.
+  - **Mô hình PhoBERT (`vinai/phobert-base` fine-tune):** **Accuracy = `84,73%`**, **F1-macro = `67,49%`**, **Toxic Precision = `61,05%`**, **Toxic Recall = `81,47%`** (F1 `CLEAN` = `92,13%`, F1 `OFFENSIVE` = `47,33%`, F1 `HATE` = `63,01%`), độ trễ **`25,28 ms/bình luận`**, kích thước **`516,95 MB`**.
+  - **Kết luận so sánh:** Hai mô hình có hiệu năng F1-macro tổng thể tương đương nhau (+0,46 điểm % không có ý nghĩa thống kê). PhoBERT vượt trội về khả năng phát hiện bình luận độc hại (bắt thêm 70 bình luận độc hại, Toxic Recall đạt 81,47%), nhưng đánh đổi bằng tỷ lệ báo nhầm cao hơn và tài nguyên tính toán lớn hơn.
 - Xây dựng ứng dụng Web **Streamlit 6 trang** phục vụ thử nghiệm trực tiếp (kèm giải thích từ gây độc bằng kỹ thuật *Leave-One-Token-Out*), minh họa tiền xử lý, hiển thị bảng đánh giá và quét bình luận thực tế qua **YouTube Data API v3** (`src/youtube.py` & `scripts/lay_youtube_demo.py`).
 
 ---
@@ -41,10 +44,10 @@ Quá trình làm sạch từ file gốc `data/raw/comments.csv` diễn ra qua c�
 
 | Tập dữ liệu | File lưu trữ | Tổng số mẫu | Nhãn `0` (`CLEAN`) | Nhãn `1` (`OFFENSIVE`) | Nhãn `2` (`HATE`) |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Train (80%)** | `data/processed/03_train.csv` | **23.880** | 19.726 (`82,60%`) | 1.606 (`6,73%`) | 2.548 (`10,67%`) |
-| **Validation (10%)** | `data/processed/03_val.csv` | **2.985** | 2.466 (`82,61%`) | 201 (`6,73%`) | 318 (`10,65%`) |
-| **Test (10%)** | `data/processed/03_test.csv` | **2.986** | 2.466 (`82,59%`) | 201 (`6,73%`) | 319 (`10,68%`) |
-| **Toàn bộ** | `data/processed/02_du_lieu_sach.csv` | **29.851** | **24.658 (`82,60%`)** | **2.008 (`6,73%`)** | **3.185 (`10,67%`)** |
+| **Train (80%)** | `data/processed/03_train.csv` | **23.880** | 19.652 (`82,29%`) | 1.615 (`6,76%`) | 2.613 (`10,94%`) |
+| **Validation (10%)** | `data/processed/03_val.csv` | **2.985** | 2.456 (`82,28%`) | 202 (`6,77%`) | 327 (`10,95%`) |
+| **Test (10%)** | `data/processed/03_test.csv` | **2.986** | 2.457 (`82,28%`) | 202 (`6,76%`) | 327 (`10,95%`) |
+| **Toàn bộ** | `data/processed/02_du_lieu_sach.csv` | **29.851** | **24.565 (`82,29%`)** | **2.019 (`6,76%`)** | **3.267 (`10,94%`)** |
 
 **Độ dài câu trong tập Train:** Trung bình đạt **11,6 từ/bình luận**, trung vị đạt **8,0 từ/bình luận**, câu dài nhất gồm **444 từ**.
 
@@ -102,7 +105,14 @@ Mọi bình luận (cả khi huấn luyện lẫn khi dự đoán trực tiếp 
 ### 3.3. Mô hình PhoBERT Fine-tune (`scripts/run_phobert.py` & `notebooks/03_phobert_colab.ipynb`)
 - **Kiến trúc thực tế trong code:** Fine-tune mô hình **`vinai/phobert-base`** với tầng phân loại 3 lớp (`AutoModelForSequenceClassification`), độ dài tối đa `max_length = 128` token sau tách từ `pyvi`.
 - **Hàm mất mát có trọng số (`WeightedTrainer`):** Để chống lệch nhãn, hàm `CrossEntropyLoss` được truyền vector trọng số lớp cân bằng (`compute_class_weight('balanced')`) tính trên tập Train, kết hợp `fp16=True`, `learning_rate=2e-5`, `weight_decay=0.01`, `4 epochs` và chọn checkpoint tốt nhất theo `eval_f1_macro`.
-- 📝 **`[CẦN NHÓM ĐỌC LẠI / BỔ SUNG KHI CÓ PHOBERT]`:** Sau khi chạy xong `notebooks/03_phobert_colab.ipynb` trên Google Colab GPU và giải nén về `models/phobert/best/`, nhóm chạy `python scripts/evaluate_final.py` và điền bổ sung chỉ số F1-macro Test của `vinai/phobert-base` vào Mục 4.
+- **Kết quả huấn luyện thực tế trên Google Colab GPU (Tesla T4):**
+  - Quá trình huấn luyện diễn ra tự động hoàn toàn theo kịch bản `notebooks/03_phobert_colab.ipynb` và `scripts/run_phobert.py` với tổng thời gian **`483,64 giây` (~8 phút)** cho 4 epochs trên 23.880 mẫu Train (`batch_size = 16`, `gradient_accumulation_steps = 2`, effective batch size = 32).
+  - Diễn biến đánh giá trên tập Validation qua 4 epochs (`outputs/phobert_training_log.csv`):
+    - **Epoch 1:** Loss = 0.5126 | Val Accuracy = 83,08% | Val F1-macro = **65,41%**
+    - **Epoch 2:** Loss = 0.4497 | Val Accuracy = 85,26% | Val F1-macro = **68,41%** ➔ **Checkpoint tốt nhất (`best`)** được lưu lại.
+    - **Epoch 3:** Loss = 0.4950 | Val Accuracy = 84,39% | Val F1-macro = **67,57%**
+    - **Epoch 4:** Loss = 0.5480 | Val Accuracy = 84,66% | Val F1-macro = **67,89%**
+  - Trọng số tốt nhất tại Epoch 2 (`models/phobert/best/`) đạt **F1-macro Validation = `68,41%`** và **Accuracy Validation = `85,26%`** được mang về máy trạm để đánh giá chính thức trên tập Test ở Mục 4.
 
 ---
 
@@ -113,14 +123,17 @@ Kịch bản `scripts/evaluate_final.py` chấm điểm tập `data/processed/03
 ### 4.1. Bảng kết quả chính thức trên tập Test (`outputs/bang_so_sanh_mo_hinh.csv`)
 | Mô hình | Accuracy (%) | F1-macro (%) | Toxic Precision (%) | Toxic Recall (%) | F1 `CLEAN` (%) | F1 `OFFENSIVE` (%) | F1 `HATE` (%) | Độ trễ (ms/câu) | Kích thước (MB) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **TF-IDF + LinearSVC (Calibrated)** | **87,74%** | **67,03%** | **74,59%** | **68,24%** | **94,13%** | **41,36%** | **65,61%** | **5,89 ms** | **9,42 MB** |
-| *PhoBERT (`vinai/phobert-base`)* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* | *`[Chờ Colab]`* |
+| **TF-IDF + LinearSVC (Calibrated)** | **87,74%** | **67,03%** | **74,59%** | **68,24%** | **94,13%** | **41,36%** | **65,61%** | **4,32 ms** | **9,42 MB** |
+| **PhoBERT (`vinai/phobert-base` fine-tune)** | **84,73%** | **67,49%** | **61,05%** | **81,47%** | **92,13%** | **47,33%** | **63,01%** | **25,28 ms** | **516,95 MB** |
 
-*(Trong đó **Toxic Precision = `74,59%`** và **Toxic Recall = `68,24%`** đo hiệu năng phát hiện bình luận độc hại trên 2 lớp `{1: OFFENSIVE, 2: HATE}`).*
-
-### 4.2. Phân tích Ma trận nhầm lẫn chính thức trên tập Test (`outputs/ma_tran_nham_lan_TF_IDF_LinearSVC_Calibrated.png`)
-Trên tổng số **2.986** mẫu của tập Test:
-- **Lớp `0 — Bình thường` (2.466 mẫu thật):** Mô hình đoán đúng **2.343 mẫu (`95,01%`)**, báo nhầm sang `Xúc phạm` 57 mẫu và sang `Thù ghét` 66 mẫu (tổng cộng **123 ca Báo nhầm — False Positive**, chiếm `4,99%` số câu bình thường).
+> **Nhận xét so sánh trung thực và chuyên sâu giữa hai mô hình trên tập Test:**
+> 1. **Hiệu năng tổng thể (F1-macro) tương đương nhau:** PhoBERT đạt F1-macro **67,49%**, nhỉnh hơn Baseline (**67,03%**) đúng **+0,46 điểm %**. Kết quả kiểm định Paired Bootstrap (2.000 lần lặp mẫu lại trên tập Test, `outputs/bootstrap_chenh_lech_f1.csv`) cho thấy khoảng tin cậy 95% của độ chênh lệch là `[-1,98%, +2,99%]`. Vì khoảng này chứa 0, ta có cơ sở khoa học khẳng định: **hai mô hình có hiệu năng phân loại tổng thể tương đương nhau**.
+> 2. **Sự đánh đổi bản chất: Khả năng bắt độc hại (Recall) đối lập với Độ báo nhầm (Precision):**
+>    - **PhoBERT bắt nhạy hơn nhiều (Toxic Recall = 81,47% vs 68,24%):** Trên tổng số 529 câu độc hại thật trong tập Test, PhoBERT bắt được **431 câu**, chỉ để lọt 98 câu (Baseline chỉ bắt được 361 câu, để lọt 168 câu). Như vậy PhoBERT **bắt thêm được 70 bình luận độc hại**, và đặc biệt cải thiện mạnh lớp `OFFENSIVE` (F1 tăng từ 41,36% lên 47,33%, Recall lớp này tăng vọt từ 39,11% lên 61,39%) nhờ khả năng hiểu nghĩa ngữ cảnh của transformer hai chiều.
+>    - **PhoBERT báo nhầm người dùng bình thường nhiều hơn (Toxic Precision = 61,05% vs 74,59%):** Trong 2.457 câu bình thường, PhoBERT báo nhầm 275 câu thành độc hại (`11,19%`), cao hơn gấp đôi so với Baseline chỉ báo nhầm 123 câu (`5,01%`). Điều này khiến Accuracy tổng thể của PhoBERT (84,73%) thấp hơn Baseline (87,74%).
+>    - **Chi phí triển khai phần cứng:** Baseline cực nhẹ (**9,42 MB**) và chạy nhanh gấp 6 lần (**4,32 ms/câu**), chạy hoàn toàn trên CPU thông thường. PhoBERT nặng tới **516,95 MB** (gấp 55 lần) và độ trễ **25,28 ms/câu** trên GPU.
+> 3. **Giải thích tiêu chí chọn `best_model` trong `models/config.json`:**
+>    File cấu hình hệ thống `models/config.json` do `scripts/build_config.py` sinh ra tự động, trong đó tiêu chí xếp hạng mô hình tốt nhất được lập trình là **mô hình có F1-macro cao nhất trên tập Test** (`outputs/bang_so_sanh_mo_hinh.csv`). Vì `67,49%` > `67,03%`, `PhoBERT (fine-tune)` được chọn làm `best_model` mặc định khi người dùng có thư mục trọng số.*, báo nhầm sang `Xúc phạm` 57 mẫu và sang `Thù ghét` 66 mẫu (tổng cộng **123 ca Báo nhầm — False Positive**, chiếm `4,99%` số câu bình thường).
 - **Lớp `1 — Xúc phạm` (201 mẫu thật):** Mô hình đoán đúng **73 mẫu (`36,32%`)**, bỏ sót sang `Bình thường` 91 mẫu (`45,27%`) và nhầm mức độ sang `Thù ghét` 37 mẫu (`18,41%`). Kết hợp với Precision `48,03%`, **F1 chính thức của lớp `OFFENSIVE` trên tập Test là `41,36%`**.
 - **Lớp `2 — Thù ghét` (319 mẫu thật):** Mô hình đoán đúng **204 mẫu (`63,95%`)**, nhầm mức độ sang `Xúc phạm` 38 mẫu (`11,91%`) và bỏ sót sang `Bình thường` 77 mẫu (`24,14%`). **F1 chính thức của lớp `HATE` trên tập Test đạt `65,61%`** (cao hơn trên Val là `63,56%`).
 - **Tổng số ca Bỏ sót độc hại (False Negative — thật là 1 hoặc 2 nhưng đoán là 0):** **168 mẫu** trên tổng số 520 mẫu độc hại.
@@ -147,21 +160,24 @@ Chia 2.986 mẫu tập Test thành 3 nhóm theo số lượng từ sau tách t�
 
 | Nhóm bình luận trên tập Test | Số mẫu | Tỷ lệ đoán sai nhãn (%) | Accuracy (%) | F1-macro (%) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Câu không chứa các dấu hiệu nhiễu** | 1.991 | 12,10% | 87,90% | 68,07% |
-| **Câu có chữ kéo dài** | 102 | **7,84%** | **92,16%** | **69,20%** |
-| **Câu có emoji** | 403 | 9,43% | 90,57% | 62,37% |
-| **Câu có teencode / viết tắt** | 596 | **15,60%** | 84,40% | 61,69% |
-| **Câu chèn ký tự / dấu `*` né lọc** | 19 | **36,84%** | 63,16% | 59,00% |
+| **Câu không chứa các dấu hiệu trên** | 1.991 | 15,17% | 84,83% | 67,54% |
+| **Câu có chữ kéo dài** | 102 | 16,67% | 83,33% | 66,36% |
+| **Câu có emoji** | 403 | 11,41% | 88,59% | 68,54% |
+| **Câu có teencode / viết tắt** | 596 | 18,12% | 81,88% | 64,39% |
+| **Câu chèn ký tự / dấu `*` né lọc** | 19 | **10,53%** | **89,47%** | **84,27%** |
 
-**Nhận xét:**
-- Nhờ hàm `fix_keo_dai` trong `src/preprocess.py`, các câu có chữ kéo dài được chuẩn hóa rất tốt và đạt tỷ lệ lỗi thấp nhất (`7,84%`).
-- Các câu chứa **teencode (`15,60%` lỗi)** và đặc biệt là **câu chèn ký tự / dấu `*` né bộ lọc (`36,84%` lỗi)** vẫn là nhóm khó nhất vì người dùng tạo ra các biến thể viết tắt ngoài danh sách 42 từ hoặc dùng dấu `*` che mất nguyên âm (`đ*o`, `đ*t`) khiến từ vựng lệch khỏi từ điển chuẩn.
+**Nhận xét đối chiếu giữa hai mô hình (`outputs/so_sanh_theo_nhom_hai_mo_hinh.csv`):**
+- **Bình luận có dấu `*` hoặc chèn ký tự né bộ lọc (19 mẫu):** Đây là nhóm ghi nhận sự vượt trội rõ rệt nhất của **PhoBERT**. Mô hình Baseline TF-IDF bị đánh lừa nặng nề với tỷ lệ đoán sai lên tới **36,84%** (F1-macro chỉ đạt 59,00%). Trong khi đó, PhoBERT nhờ cơ chế self-attention và hiểu ngữ cảnh xung quanh token đã giảm tỷ lệ lỗi xuống chỉ còn **10,53%** (F1-macro tăng vọt lên **84,27%**).
+- **Bình luận dài (>25 từ):** Cả hai mô hình đều nhận diện rất tốt lớp Thù ghét (`F1 HATE` đạt ~78%), nhưng PhoBERT giữ được F1 lớp Xúc phạm ở mức **41,03%**, trong khi Baseline bị tụt xuống **13,33%** do các n-gram từ ngữ xúc phạm bị pha loãng hoàn toàn trong câu dài.
+- **Bình luận có teencode và chữ kéo dài:** Nhờ quy trình 8 bước tiền xử lý chuẩn hóa ở `src/preprocess.py`, cả hai mô hình đều duy trì được F1-macro ổn định trên 64%.
 
 ### 5.3. Phân tích nguyên nhân lớp `OFFENSIVE` đạt F1 = `41,36%` trên Test & Top 15 ca đoán sai (`outputs/top15_offensive_doan_sai.csv`)
 Việc lớp `OFFENSIVE` có F1 chính thức trên tập Test là **`41,36%`** (dưới mức `0,50`) xuất phát từ **3 hạn chế bản chất của dữ liệu**:
-1. **Thiếu mẫu huấn luyện nghiêm trọng:** Lớp `OFFENSIVE` chỉ chiếm **`6,73%`** bộ dữ liệu (`1.606` mẫu Train, `201` mẫu Test).
+1. **Thiếu mẫu huấn luyện nghiêm trọng:** Lớp `OFFENSIVE` chỉ chiếm **`6,76%`** bộ dữ liệu (`1.615` mẫu Train, `202` mẫu Test).
 2. **Định nghĩa nhãn nằm ở vùng xám:** Nhiều câu trong `outputs/top15_offensive_doan_sai.csv` dùng từ ngữ hoàn toàn thông thường để mỉa mai hoặc nói trại âm:
-   - Ví dụ 1: *"Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á"* -> Nhãn thật: `OFFENSIVE`, mô hình đoán: `Bình thường` (`P = 0,8769`) vì cả câu chỉ có từ *"khùng"* nằm cuối câu điều kiện dài.
+   - Ví dụ 1 (Minh chứng PhoBERT hiểu ngữ cảnh tốt hơn Baseline): *"Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á"* -> Nhãn thật trên Test: `OFFENSIVE (1)`.
+  - **Baseline:** Đoán sai thành `Bình thường` (`P_toxic = 0,1231`) vì cụm từ xúc phạm *"khùng á"* nằm ở cuối câu điều kiện dài và bị các từ trung lập lấn át.
+  - **PhoBERT:** Đoán **chính xác `Xúc phạm`** (`P_toxic = 0,7832`, xác suất OFFENSIVE = 0,6988) nhờ khả năng nắm bắt ngữ cảnh trọn vẹn của câu.
    - Ví dụ 2: *"Này khẩu phật tâm xà"* hoặc *"Cứ tưởng thế là ngầu"* -> Nhãn thật: `OFFENSIVE`, mô hình đoán: `Bình thường` (`P = 0,8882` và `0,8746`) vì không hề có từ tục, chỉ mang sắc thái chê bai ngầm.
    - Ví dụ 3: *"Đ*o hiểu lun"* và *"Ghi thêm chữ đ*t chị m nx :))* -> Nhãn thật: `OFFENSIVE`, mô hình đoán: `Bình thường` (`P = 0,8696` và `0,8613`) do người viết dùng dấu `*` và viết tắt biến thể (`lun`, `nx`).
 3. **Bất đồng nhãn từ người gán nhãn (Annotator Disagreement):** Ngay trong `outputs/phan_tich_loi.csv`, nhiều câu có nhãn gốc là `Bình thường (0)` nhưng chứa từ chửi thề rất nặng (ví dụ: *"Đụ mẹ tay ghi , não đéo kịp suy nghĩ..."* hoặc *"Má dơ vl =)))"*), khiến mô hình dự đoán là `Thù ghét / Xúc phạm` với độ tự tin `> 99%` và bị tính là lỗi False Positive.

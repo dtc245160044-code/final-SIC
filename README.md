@@ -16,10 +16,10 @@ Từ **33.397** dòng dữ liệu thô ban đầu (`data/raw/comments.csv`), sau
 
 | Tập dữ liệu | File lưu trữ | Tổng số mẫu | `0 = Bình thường` | `1 = Xúc phạm` | `2 = Thù ghét` |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Train (Huấn luyện)** | `data/processed/03_train.csv` | **23.880** | 19.726 (`82,60%`) | 1.606 (`6,73%`) | 2.548 (`10,67%`) |
-| **Validation (Tinh chỉnh)** | `data/processed/03_val.csv` | **2.985** | 2.466 (`82,61%`) | 201 (`6,73%`) | 318 (`10,65%`) |
-| **Test (Kiểm tra cuối)** | `data/processed/03_test.csv` | **2.986** | 2.466 (`82,59%`) | 201 (`6,73%`) | 319 (`10,68%`) |
-| **Tổng cộng** | | **29.851** | **24.658 (`82,60%`)** | **2.008 (`6,73%`)** | **3.185 (`10,67%`)** |
+| **Train (Huấn luyện)** | `data/processed/03_train.csv` | **23.880** | 19.652 (`82,29%`) | 1.615 (`6,76%`) | 2.613 (`10,94%`) |
+| **Validation (Tinh chỉnh)** | `data/processed/03_val.csv` | **2.985** | 2.456 (`82,28%`) | 202 (`6,77%`) | 327 (`10,95%`) |
+| **Test (Kiểm tra cuối)** | `data/processed/03_test.csv` | **2.986** | 2.457 (`82,28%`) | 202 (`6,76%`) | 327 (`10,95%`) |
+| **Tổng cộng** | | **29.851** | **24.565 (`82,29%`)** | **2.019 (`6,76%`)** | **3.267 (`10,94%`)** |
 
 ---
 
@@ -29,9 +29,15 @@ Từ **33.397** dòng dữ liệu thô ban đầu (`data/raw/comments.csv`), sau
 
 | Mô hình | Accuracy (%) | F1-macro (%) | Toxic Precision (%) | Toxic Recall (%) | F1 CLEAN (%) | F1 OFFENSIVE (%) | F1 HATE (%) | Độ trễ (ms/câu) | Kích thước (MB) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **TF-IDF + LinearSVC (Calibrated)** | **87,74%** | **67,03%** | **74,59%** | **68,24%** | **94,13%** | **41,36%** | **65,61%** | **5,89 ms** | **9,42 MB** |
+| **TF-IDF + LinearSVC (Calibrated)** | **87,74%** | **67,03%** | **74,59%** | **68,24%** | **94,13%** | **41,36%** | **65,61%** | **4,32 ms** | **9,42 MB** |
+| **PhoBERT (fine-tune)** | **84,73%** | **67,49%** | **61,05%** | **81,47%** | **92,13%** | **47,33%** | **63,01%** | **25,28 ms** | **516,95 MB** |
 
-*(Khi bổ sung thư mục `models/phobert/best/` từ Colab và chạy lại `python scripts/evaluate_final.py`, dòng kết quả của `PhoBERT (fine-tune)` sẽ tự động được cập nhật vào bảng trên và trên giao diện Web).*
+> **Nhận xét so sánh trung thực giữa hai mô hình:**
+> - **Hiệu năng tổng thể tương đương:** F1-macro chênh lệch rất nhỏ (+0,46 điểm % nghiêng về PhoBERT). Kiểm định Paired Bootstrap (2.000 lần lặp) cho khoảng tin cậy 95% của chênh lệch F1-macro là `[-1,98%, +2,99%]`, khẳng định hai mô hình có hiệu năng tổng thể tương đương nhau về mặt thống kê.
+> - **Sự đánh đổi rõ rệt giữa Bỏ sót (Recall) và Báo nhầm (Precision):**
+>   - **PhoBERT bắt được nhiều câu độc hại hơn (Toxic Recall 81,47% vs 68,24%):** Số ca bỏ sót câu độc hại giảm mạnh từ 168 ca xuống 98 ca (bắt thêm 70 bình luận độc hại), đặc biệt F1 lớp Xúc phạm tăng từ 41,36% lên 47,33% nhờ hiểu ngữ cảnh mỉa mai ngầm.
+>   - **Nhưng PhoBERT báo nhầm nhiều hơn (Toxic Precision 61,05% vs 74,59%):** Số ca báo nhầm câu bình thường sang độc hại tăng hơn gấp đôi (275 ca FP vs 123 ca FP). Ngoài ra, PhoBERT nặng gấp 55 lần (516,95 MB vs 9,42 MB) và độ trễ suy luận chậm hơn gần 6 lần (25,28 ms vs 4,32 ms/bình luận).
+> - **Tiêu chí chọn `best_model` trong `models/config.json`:** Script `scripts/build_config.py` tự động chọn mô hình có F1-macro cao nhất trên tập Test (`outputs/bang_so_sanh_mo_hinh.csv`). Vì 67,49% > 67,03%, PhoBERT được chọn làm mô hình mặc định trên Web khi có đủ trọng số.
 
 ---
 

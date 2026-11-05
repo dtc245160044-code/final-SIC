@@ -1,6 +1,6 @@
 Nhóm bình luận,Số mẫu trên Test,Tỷ lệ lỗi đoán sai nhãn (%),Accuracy (%),F1-macro (%)
-Câu có teencode/viết tắt,596,15.6,84.4,61.69
-Câu chèn ký tự / dấu * né lọc,19,36.84,63.16,59.0
-Câu có chữ kéo dài,102,7.84,92.16,69.2
-Câu có emoji,403,9.43,90.57,62.37
-Câu không chứa các dấu hiệu trên,1991,12.1,87.9,68.07
+Câu có teencode/viết tắt,596,18.12,81.88,64.39
+Câu chèn ký tự / dấu * né lọc,19,10.53,89.47,84.27
+Câu có chữ kéo dài,102,16.67,83.33,66.36
+Câu có emoji,403,11.41,88.59,68.54
+Câu không chứa các dấu hiệu trên,1991,15.17,84.83,67.54

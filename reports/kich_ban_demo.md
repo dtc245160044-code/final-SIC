@@ -34,24 +34,32 @@ Tài liệu này giúp nhóm tự tin trình bày đồ án trong **5 phút** tr
   - **Nhãn thật trên Test:** `Bình thường (0)` ➔ **Mô hình dự đoán:** `🟢 Bình thường` (Độ tin cậy: **`95,31%`**, Điểm độc hại: **`4,69%`**).
   - **Sau tiền xử lý:** `bác trần dần trả_lời câu hỏi cuối rất hay ... . rất sáng_suốt` (đã tự động xóa emoji `👍` và nối từ ghép `trả_lời`, `sáng_suốt`).
 
-#### ✅ Câu Demo 2: Câu có Teencode công kích (Mô hình đoán ĐÚNG & Tô đỏ từ gây độc)
-- **Câu nhập (bấm nút `[Mẫu 2: Teencode công kích (Test #HATE)]`):**
+#### ⚠️ Câu Demo 2: Câu có Teencode bức xúc (Bắt đúng độc hại nhưng Đoán lệch mức độ)
+- **Câu nhập (bấm nút `[Mẫu 2: Teencode bức xúc (Test #OFFENSIVE)]`):**
   ```text
   Bán hàng đàng hoàng phải ko, bán hàng lương thiện đúng không, dám cho đối chứng ko, công an cồng đầu chứ ở đó mà xạo xạo, qua mặt thiên hạ hả bưởi
   ```
 - **Kết quả mô hình chạy thật:**
   - **Sau tiền xử lý:** Các từ viết tắt `ko` được chuẩn hóa thành `không`, tách từ ghép `đàng_hoàng`, `lương_thiện`, `đối_chứng`, `công_an`, `qua_mặt`, `thiên_hạ`.
-  - **Nhãn thật trên Test:** `Thù ghét (2)` ➔ **Mô hình dự đoán:** `🔴 Thù ghét` (Độ tin cậy: **`78,34%`**, **Điểm độc hại tổng hợp = `91,25%`**).
+  - **Nhãn thật trên Test:** `Xúc phạm (1)` (`OFFENSIVE`).
+  - **Dự đoán thực tế của cả 2 mô hình:**
+    - **Baseline (LinearSVC):** Đoán `🔴 Thù ghét` (**Điểm độc hại = `91,25%`**; xác suất: Clean 8,75%, Off 12,91%, Hate 78,34%).
+    - **PhoBERT:** Đoán `🔴 Thù ghét` (**Điểm độc hại = `97,00%`**; xác suất: Clean 3,00%, Off 24,96%, Hate 72,04%).
   - **Từ bị tô đỏ (Leave-One-Token-Out):** `công_an`, `đầu`, `xạo`.
+  - **Điểm nhấn thuyết trình:** *"Cả hai mô hình đều bắt rất chính xác tính chất độc hại (điểm độc hại >91%), nhưng do câu có nhiều từ ngữ nặng nề và gay gắt nên cả hai đều đánh giá mức độ sang 'Thù ghét' thay vì 'Xúc phạm'. Điều này phản ánh ranh giới rất mờ giữa hai nhãn 1 và 2 trong thực tế."*
 
-#### ⚠️ Câu Demo 3: Câu Mỉa mai / nói giảm nói tránh ở lớp `OFFENSIVE` (Mô hình BỎ SÓT — False Negative)
+
+#### 🎯 Câu Demo 3: Câu Mỉa mai ngầm — Ưu thế vượt trội của PhoBERT so với Baseline
 - **Câu nhập (bấm nút `[Mẫu 3: Mỉa mai ngầm (Test #OFFENSIVE)]` — trích từ `outputs/top15_offensive_doan_sai.csv`):**
   ```text
   Trường hợp này ở địa phương khác kêu là gì ko biết còn địa phương mình gọi là khùng á
   ```
 - **Kết quả mô hình chạy thật:**
-  - **Nhãn thật trên Test:** `Xúc phạm (1)` ➔ **Mô hình dự đoán:** `🟢 Bình thường` (Xác suất Bình thường: **`87,69%`**, Điểm độc hại: **`12,31%`**).
-  - **Điểm nhấn thuyết trình:** Giải thích thẳng thắn với Hội đồng: *"Câu này trong tập Test có nhãn thật là OFFENSIVE, nhưng người viết dùng cách nói vòng vo, chỉ cài chữ 'khùng á' ở cuối câu nên mô hình TF-IDF bị bỏ sót sang Bình thường. Đây là minh họa trực tiếp vì sao lớp OFFENSIVE chỉ đạt F1 41,36% trên tập Test."*
+  - **Nhãn thật trên Test:** `Xúc phạm (1)` (`OFFENSIVE`).
+  - **Baseline (LinearSVC):** BỎ SÓT thành `🟢 Bình thường` (Điểm độc hại chỉ **`12,31%`**, xác suất Clean = 87,69%).
+  - **PhoBERT:** Đoán **CHÍNH XÁC `🟠 Xúc phạm`** (Điểm độc hại đạt **`78,32%`**, xác suất Offensive = 69,88%).
+  - **Điểm nhấn thuyết trình:** *"Đây là ví dụ điển hình cho thấy sức mạnh của PhoBERT: Baseline chỉ dựa vào n-gram nên bị cụm từ điều kiện dài làm loãng chữ 'khùng á'. Trong khi đó, cơ chế self-attention của PhoBERT nắm bắt được toàn bộ ngữ cảnh mỉa mai và phân loại chính xác vào lớp Xúc phạm."*
+
 
 #### ⚠️ Câu Demo 4: Câu dùng từ tục để khen món ăn (Mô hình BÁO NHẦM — False Positive)
 - **Câu nhập (bấm nút `[Mẫu 4: Từ tục khen đồ ăn (Test #FP)]` — trích từ `outputs/phan_tich_loi.csv`):**
@@ -83,13 +91,15 @@ Tài liệu này giúp nhóm tự tin trình bày đồ án trong **5 phút** tr
 ## ❓ PHẦN 2: 10 CÂU HỎI HỘI ĐỒNG HAY HỎI & GỢI Ý TRẢ LỜI
 
 ### Câu 1: Tại sao nhóm dùng F1-macro làm thước đo chính để chọn mô hình mà không dùng Accuracy?
-- **Trả lời:** Vì bộ dữ liệu ViHSD bị lệch nhãn rất nặng: nhãn `0 (Bình thường)` chiếm tới **`82,60%`**, trong khi nhãn `1 (Xúc phạm)` chỉ chiếm **`6,73%`** và nhãn `2 (Thù ghét)` chiếm **`10,67%`**. Nếu chỉ nhìn vào Accuracy, một mô hình đoán tất cả mọi câu là "Bình thường" cũng đã đạt Accuracy `82,60%` nhưng không bắt được bất kỳ bình luận độc hại nào (`F1-macro = 30,15%`). Chỉ số **F1-macro** tính trung bình cộng không trọng số F1 của cả 3 lớp, buộc mô hình phải làm tốt trên cả hai lớp thiểu số (`OFFENSIVE` và `HATE`).
+- **Trả lời:** Vì bộ dữ liệu ViHSD bị lệch nhãn rất nặng: nhãn `0 (Bình thường)` chiếm tới **`82,29%`**, trong khi nhãn `1 (Xúc phạm)` chỉ chiếm **`6,76%`** và nhãn `2 (Thù ghét)` chiếm **`10,94%`**. Nếu chỉ nhìn vào Accuracy, một mô hình đoán tất cả mọi câu là "Bình thường" cũng đã đạt Accuracy `82,60%` nhưng không bắt được bất kỳ bình luận độc hại nào (`F1-macro = 30,15%`). Chỉ số **F1-macro** tính trung bình cộng không trọng số F1 của cả 3 lớp, buộc mô hình phải làm tốt trên cả hai lớp thiểu số (`OFFENSIVE` và `HATE`).
 
 ### Câu 2: `LinearSVC` không có hàm `predict_proba()`, vậy làm sao nhóm lấy được xác suất từng nhãn và Điểm độc hại trên Web?
 - **Trả lời:** Nhóm sử dụng kỹ thuật hiệu chuẩn xác suất **`CalibratedClassifierCV(LinearSVC(C=0.1), cv=5, method='sigmoid')`** (Platt Scaling 5-fold cross-validation chỉ fit trên tập Train). Kỹ thuật này khớp một hàm Logistic trên điểm `decision_function` của SVM, giúp xuất ra phân phối xác suất chuẩn hóa trên 3 nhãn. Khi đó, **Điểm độc hại (`diem_toxic`)** được tính bằng tổng xác suất của 2 nhãn độc hại: `P(Xúc phạm) + P(Thù ghét)`.
 
-### Câu 3: Tại sao F1 trên tập Validation là `68,19%` (lớp `OFFENSIVE` là `47,03%`) nhưng trên tập Test lại là `67,03%` (lớp `OFFENSIVE` là `41,36%`)?
-- **Trả lời:** Vì trên tập Validation, nhóm đã chạy **76 lần thử nghiệm tinh chỉnh** (`outputs/thu_nghiem_baseline.csv`) gồm chọn trọng số lớp `{0: 1.0, 1: 3.0, 2: 2.0}`, ngưỡng quyết định và n-gram `word (1,3) + char_wb (2,5)`. Việc chọn mô hình tốt nhất qua 76 lần thử trên cùng tập Val tạo ra độ lạc quan nhẹ trên Val. Khi đánh giá đúng 1 lần duy nhất trên tập **Test độc lập (`2.986` mẫu)**, F1-macro thực tế là **`67,03%`** và F1 lớp `OFFENSIVE` là **`41,36%`** (trong khi F1 lớp `HATE` trên Test đạt **`65,61%`**, cao hơn trên Val là `63,56%`). Nhóm lấy số liệu trên tập Test làm kết quả chính thức.
+### Câu 3: Tại sao F1 trên tập Validation của Baseline là `68,19%` nhưng trên Test lại là `67,03%`? Và hai mô hình Baseline vs PhoBERT chênh lệch ra sao?
+- **Trả lời:**
+  1. Điểm trên Val của Baseline cao hơn Test vì đã trải qua **76 lần thử nghiệm tinh chỉnh liên tiếp trên Val** (`outputs/thu_nghiem_baseline.csv`), việc chọn cấu hình cực đại tất yếu tạo ra độ lạc quan nhẹ trên Val. Kết quả chính thức phải là kết quả trên tập Test độc lập (chấm đúng 1 lần).
+  2. **So sánh Baseline vs PhoBERT trên Test:** F1-macro của hai mô hình là **67,03%** và **67,49%** (tương đương nhau về mặt thống kê với 95% CI Bootstrap là `[-1,98%, +2,99%]`). Tuy nhiên, sự khác biệt nằm ở sự đánh đổi: PhoBERT bắt được nhiều câu độc hại hơn hẳn (Toxic Recall 81,47% vs 68,24%, bắt thêm 70 câu độc hại và cải thiện F1 lớp OFFENSIVE từ 41,36% lên 47,33%), nhưng báo nhầm nhiều hơn (275 ca FP vs 123 ca FP) và nặng hơn (517 MB vs 9,4 MB). Trong thực tế sản xuất, tùy bài toán ưu tiên ít can thiệp nhầm (chọn Baseline) hay ưu tiên không bỏ sót độc hại (chọn PhoBERT).
 
 ### Câu 4: Làm sao nhóm tính và tô đỏ được "từ gây độc" trên giao diện Web đối với cả SVM và PhoBERT?
 - **Trả lời:** Nhóm cài đặt hàm `tim_tu_gay_doc()` trong `src/inference.py` theo phương pháp **Leave-One-Token-Out (LOTO)**: với một câu đã tách từ gồm $N$ từ, hệ thống tạo $N$ biến thể câu mà mỗi biến thể lược bỏ đi đúng 1 từ, sau đó chạy mô hình để tính độ sụt giảm của Điểm độc hại (`do_giam_prob`) và độ sụt giảm Logit (`do_giam_logit`). Từ nào khi bỏ đi làm điểm độc hại giảm từ `0.03` trở lên (hoặc logit giảm `>= 0.35` đối với câu có nhiều từ chửi làm bão hòa xác suất ở `0.9999`) sẽ được tô đỏ.

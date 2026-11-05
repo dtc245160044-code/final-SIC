@@ -1,0 +1,9 @@
+Nhóm,Số mẫu,F1-macro TF-IDF + LinearSVC (Calibrated) (%),Tỷ lệ sai TF-IDF + LinearSVC (Calibrated) (%),F1-macro PhoBERT (fine-tune) (%),Tỷ lệ sai PhoBERT (fine-tune) (%)
+Độ dài: Ngắn (<=10 từ),1821,66.7,9.67,67.86,11.53
+Độ dài: Trung bình (11-25 từ),891,62.44,15.49,60.54,21.66
+Độ dài: Dài (>25 từ),274,60.36,18.98,68.96,19.34
+Nhiễu: Câu có teencode/viết tắt,596,61.69,15.6,64.39,18.12
+Nhiễu: Câu chèn ký tự / dấu * né lọc,19,59.0,36.84,84.27,10.53
+Nhiễu: Câu có chữ kéo dài,102,69.2,7.84,66.36,16.67
+Nhiễu: Câu có emoji,403,62.37,9.43,68.54,11.41
+Nhiễu: Câu không chứa các dấu hiệu trên,1991,68.07,12.1,67.54,15.17
