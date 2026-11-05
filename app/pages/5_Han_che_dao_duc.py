@@ -8,6 +8,7 @@ if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
 from app.ui import cai_dat_trang, hien_chan_trang_canh_bao, OUTPUTS_DIR, DATA_PROCESSED_DIR
+from src.preprocess import TEENCODE
 
 cai_dat_trang(tieu_de="Hạn chế & Đạo đức", icon="⚖️")
 
@@ -23,6 +24,8 @@ st.info(
     "nhận xét riêng của nhóm trước khi bảo vệ."
 )
 
+so_tu_teencode = len(TEENCODE)
+
 # Đọc số liệu thật từ file để hiển thị động (không hard-code số liệu)
 ty_le_txt = "Chưa có file dữ liệu"
 train_path = os.path.join(DATA_PROCESSED_DIR, "03_train.csv")
@@ -35,6 +38,21 @@ if os.path.isfile(train_path):
             f"Nhãn 1 (OFFENSIVE) chỉ chiếm `{vc.get(1, 0):.2f}%`, "
             f"và Nhãn 2 (HATE) chiếm `{vc.get(2, 0):.2f}%` (trên tổng số `{len(df_tr):,}` mẫu huấn luyện)"
         )
+    except Exception:
+        pass
+
+f1_off_txt = "Chưa có file `outputs/bang_so_sanh_mo_hinh.csv`"
+comp_path = os.path.join(OUTPUTS_DIR, "bang_so_sanh_mo_hinh.csv")
+if os.path.isfile(comp_path):
+    try:
+        df_c = pd.read_csv(comp_path)
+        if not df_c.empty and "F1 OFFENSIVE (%)" in df_c.columns:
+            best_r = df_c.sort_values(by="F1-macro (%)", ascending=False).iloc[0]
+            f1_off_txt = (
+                f"Trên tập Test, mô hình `{best_r['Mô hình']}` đạt F1-macro `{best_r['F1-macro (%)']:.2f}%`, "
+                f"nhưng F1 của riêng lớp `OFFENSIVE` dừng ở `{best_r['F1 OFFENSIVE (%)']:.2f}%` "
+                f"(so với `CLEAN` `{best_r['F1 CLEAN (%)']:.2f}%` và `HATE` `{best_r['F1 HATE (%)']:.2f}%`)"
+            )
     except Exception:
         pass
 
@@ -60,7 +78,8 @@ with col1:
             <ul>
                 <li><b>Nguồn dữ liệu:</b> Bộ dữ liệu <b>ViHSD (Vietnamese Hate Speech Detection)</b> gồm các bình luận thu thập từ mạng xã hội Việt Nam và được gán nhãn thủ công bởi nhiều người gán nhãn (crowd-annotated) theo 3 mức: <code>0=CLEAN</code>, <code>1=OFFENSIVE</code>, <code>2=HATE</code>.</li>
                 <li><b>Tỷ lệ nhãn thực tế (đọc từ file):</b> {ty_le_txt}.</li>
-                <li><b>Ranh giới mờ ở nhãn OFFENSIVE:</b> Trong 240 văn bản trùng lặp xuất hiện nhiều lần ở dữ liệu gốc, nhiều câu được gán đồng thời cả nhãn <code>0</code>, <code>1</code> hoặc <code>2</code>. Điều này cho thấy ranh giới giữa câu nói đùa có từ suồng sã (CLEAN), câu xúc phạm (OFFENSIVE) và câu thù ghét (HATE) mang tính chủ quan cao ngay cả với người gán nhãn.</li>
+                <li><b>Hiệu năng thực tế trên lớp OFFENSIVE (đọc từ file):</b> {f1_off_txt}.</li>
+                <li><b>Ranh giới mờ ở nhãn OFFENSIVE:</b> Nhiều câu trong dữ liệu gốc có sự bất đồng nhãn giữa người gán nhãn do ranh giới giữa câu nói đùa có từ suồng sã (CLEAN), câu xúc phạm (OFFENSIVE) và câu thù ghét (HATE) mang tính chủ quan cao.</li>
             </ul>
         </div>
 
@@ -71,7 +90,7 @@ with col1:
                 <li><b>Nói mỉa mai, châm biếm ngầm (Sarcasm / Irony):</b> Các câu dùng từ ngữ hoàn toàn lịch sự nhưng mang hàm ý chế giễu hoặc hạ thấp người khác thường bị mô hình xếp vào nhóm <i>Bình thường</i> (False Negative).</li>
                 <li><b>Từ tục dùng trong ngữ cảnh đùa vui / khen ngợi bạn bè:</b> Nhiều bình luận trên mạng xã hội dùng từ lóng/tục (như <code>vl</code>, <code>đm</code>, <code>bóp dái</code>...) để trêu đùa streamer hoặc khen ngợi nhưng bị mô hình bắt theo từ khóa và báo nhầm thành <i>Độc hại</i> (False Positive).</li>
                 <li><b>Thiếu ngữ cảnh hội thoại:</b> Mô hình chỉ đọc từng bình luận rời rạc, không biết nội dung video gốc hay bình luận trước đó đang nói về chủ đề gì.</li>
-                <li><b>Biến thể teencode và lách bộ lọc mới:</b> Dù <code>src/preprocess.py</code> đã xử lý 42 từ teencode phổ biến và chữ chèn dấu chấm/gạch ngang, người dùng mạng luôn sáng tạo cách viết trại âm mới chưa có trong từ điển.</li>
+                <li><b>Biến thể teencode và lách bộ lọc mới:</b> Dù <code>src/preprocess.py</code> đã xử lý {so_tu_teencode} từ teencode phổ biến và chữ chèn dấu chấm/gạch ngang, người dùng mạng luôn sáng tạo cách viết trại âm mới chưa có trong từ điển.</li>
             </ul>
         </div>
         """,
@@ -105,14 +124,14 @@ with col2:
     )
 
 st.markdown(
-    """
+    f"""
     <div class="sentinel-card">
         <h4>🚀 5. Hướng phát triển tiếp theo</h4>
         <p><i>📝 [CẦN NHÓM ĐỌC LẠI & CHỈNH SỬA]:</i></p>
         <ol style="margin-bottom:0;">
             <li><b>Đưa thêm ngữ cảnh (Context-aware):</b> Kết hợp tiêu đề video/bài viết và bình luận cha (parent comment) làm đầu vào cho PhoBERT thay vì chỉ phân loại câu đơn lẻ.</li>
             <li><b>Cải thiện chất lượng nhãn OFFENSIVE:</b> Rà soát lại các mẫu bất đồng nhãn (label noise) trong tập dữ liệu và bổ sung hướng dẫn gán nhãn rõ ràng hơn giữa <i>từ cảm thán suồng sã</i> và <i>lời lẽ xúc phạm có chủ đích</i>.</li>
-            <li><b>Mở rộng chuẩn hóa tiếng Việt:</b> Kết hợp mô hình ngôn ngữ nhỏ hoặc từ điển ngữ âm để chuẩn hóa các kiểu viết trại âm, lách bộ lọc mới ngoài danh sách 42 từ teencode tĩnh.</li>
+            <li><b>Mở rộng chuẩn hóa tiếng Việt:</b> Kết hợp mô hình ngôn ngữ nhỏ hoặc từ điển ngữ âm để chuẩn hóa các kiểu viết trại âm, lách bộ lọc mới ngoài danh sách {so_tu_teencode} từ teencode tĩnh.</li>
         </ol>
     </div>
     """,

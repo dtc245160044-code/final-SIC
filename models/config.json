@@ -1,0 +1,22 @@
+{
+  "label_names": [
+    "Bình thường",
+    "Xúc phạm",
+    "Thù ghét"
+  ],
+  "label_codes": [
+    "CLEAN",
+    "OFFENSIVE",
+    "HATE"
+  ],
+  "toxic_ids": [
+    1,
+    2
+  ],
+  "best_model": "TF-IDF + LinearSVC (Calibrated)",
+  "max_len": 128,
+  "models_available": [
+    "TF-IDF + LinearSVC (Calibrated)"
+  ],
+  "is_demo_data": false
+}
